@@ -1,0 +1,15 @@
+{
+  "name": "SizeFit — exact file size compressor",
+  "short_name": "SizeFit",
+  "description": "Resize a photo to the exact KB size an online form demands, without going over the limit. Runs entirely in your browser.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#A32E1C",
+  "theme_color": "#A32E1C",
+  "icons": [
+    { "src": "/icon.png", "sizes": "1024x1024", "type": "image/png", "purpose": "any" },
+    { "src": "/adaptive-icon.png", "sizes": "1024x1024", "type": "image/png", "purpose": "maskable" }
+  ]
+}

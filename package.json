@@ -1,0 +1,50 @@
+{
+  "name": "sizefit",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Exact-size document compressor",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "fixtures": "tsx test/fixtures/generate.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "start": "expo start",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "assets": "tsx scripts/makeAssets.ts",
+    "build:web": "expo export --platform web",
+    "serve:web": "npx serve dist --single --listen 8083"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.7",
+    "@types/react": "~19.2.4",
+    "sharp": "^0.33.4",
+    "tsx": "^4.19.2",
+    "typescript": "^5.5.4",
+    "vitest": "^2.1.8"
+  },
+  "main": "index.ts",
+  "dependencies": {
+    "@expo/metro-runtime": "~57.0.15",
+    "@expo/vector-icons": "^15.0.2",
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "expo": "^57.0.23",
+    "expo-document-picker": "~57.0.2",
+    "expo-file-system": "~57.0.7",
+    "expo-haptics": "~57.0.3",
+    "expo-image-manipulator": "~57.0.18",
+    "expo-image-picker": "~57.0.18",
+    "expo-linear-gradient": "~57.0.2",
+    "expo-localization": "~57.0.2",
+    "expo-media-library": "~57.0.5",
+    "expo-sharing": "~57.0.20",
+    "expo-splash-screen": "~57.0.9",
+    "expo-status-bar": "~57.0.1",
+    "pdf-lib": "^1.17.1",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-native": "0.86.3",
+    "react-native-safe-area-context": "~5.7.0",
+    "react-native-web": "^0.21.2"
+  }
+}
