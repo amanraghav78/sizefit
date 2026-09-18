@@ -15,6 +15,8 @@ import { AppState, KeyboardAvoidingView, Platform, StyleSheet, View, useColorSch
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { compress } from './src/core/compress';
 import { buildSizedPdf } from './src/core/pdfBuilder';
+import { compressPdf } from './src/core/pdfCompress';
+import { detectFormat } from './src/core/sniff';
 import { CompressError } from './src/core/errors';
 import type { CompressRequest, CompressResult, ImageCodec, Rotation } from './src/core/types';
 import { clearRecents, loadRecents, rememberTarget, type RecentTarget } from './src/data/recentStore';
@@ -38,6 +40,7 @@ import { saveOutput } from './src/platform/saveOutput';
 import { writeDocument } from './src/platform/writeDocument';
 import { shareOutput } from './src/platform/shareOutput';
 import { BatchScreen, type BatchItem, type PdfOutcome } from './src/screens/BatchScreen';
+import { DocumentScreen, type DocumentOutcome } from './src/screens/DocumentScreen';
 import { HomeScreen } from './src/screens/HomeScreen';
 import { PreviewScreen, type ManualPreview, type SourceInfo } from './src/screens/PreviewScreen';
 import { ResultScreen } from './src/screens/ResultScreen';
@@ -50,7 +53,7 @@ import { Shell } from './src/ui/Shell';
 import { formatSize } from './src/ui/format';
 import { darkTheme, lightTheme, spacing } from './src/ui/theme';
 
-type Screen = 'home' | 'target' | 'preview' | 'batch' | 'result' | 'settings';
+type Screen = 'home' | 'target' | 'preview' | 'batch' | 'document' | 'result' | 'settings';
 
 const APP_VERSION = '0.1.0';
 /** §10: sweep leftover working files on this cadence while the app is open. */
@@ -94,6 +97,11 @@ function SizeFit() {
   const [batch, setBatch] = useState<BatchItem[]>([]);
   const [batchProgress, setBatchProgress] = useState<{ done: number; total: number } | null>(null);
   const [pdf, setPdf] = useState<PdfOutcome | null>(null);
+
+  // A PDF source takes a separate path: it is never decoded as an image, so it
+  // has no SourceInfo and no Preview.
+  const [documentSource, setDocumentSource] = useState<{ uri: string; bytes: number } | null>(null);
+  const [documentResult, setDocumentResult] = useState<DocumentOutcome | null>(null);
 
   // Rotation is a view on the source, not a separate edit: changing it re-runs
   // the search so the size guarantee still holds for the rotated image.
@@ -148,6 +156,21 @@ function SizeFit() {
       const codec = createCodec();
       codecRef.current = codec;
       try {
+        // A PDF must be recognised before `probe`, which decodes as an image
+        // and would throw on a document. The header is the only reliable tell:
+        // a file picked as ".pdf" can be anything.
+        const head = await codec.readBytes(uri);
+        if (detectFormat(head.subarray(0, 64)) === 'pdf') {
+          setSource(null);
+          setDocumentResult(null);
+          setDocumentSource({ uri, bytes: head.length });
+          setSourceLabel(`${label} · ${formatSize(head.length)}`);
+          setPendingTarget(startingTarget ?? defaultTarget);
+          setScreen('target');
+          return;
+        }
+        setDocumentSource(null);
+
         const probe = await codec.probe(uri);
         setSource({ uri, bytes: probe.bytes, width: probe.width, height: probe.height });
         setSourceLabel(`${label} · ${formatSize(probe.bytes)}`);
@@ -246,7 +269,7 @@ function SizeFit() {
     setBusy(true);
     try {
       const picked = await DocumentPicker.getDocumentAsync({
-        type: ['image/*'],
+        type: ['image/*', 'application/pdf'],
         copyToCacheDirectory: true,
       });
       if (picked.canceled || !picked.assets[0]) return;
@@ -258,6 +281,82 @@ function SizeFit() {
       setBusy(false);
     }
   }, [startWith, t]);
+
+  /**
+   * The PDF path. It shares the Target screen with images but nothing after
+   * it: there is no decoded source to preview and no quality slider, because
+   * the document's size is the sum of many images rather than one dial.
+   */
+  const runDocumentCompression = useCallback(
+    async (target: TargetSpec) => {
+      const codec = codecRef.current;
+      if (!codec || !documentSource) {
+        setError(t('error.fileGone'));
+        setScreen('home');
+        return;
+      }
+
+      const controller = new AbortController();
+      abortRef.current = controller;
+      setBusy(true);
+      setError(null);
+      try {
+        const maxBytes = Math.round(target.maxKB * 1024);
+        const outcome = await compressPdf(
+          {
+            sourceUri: documentSource.uri,
+            minBytes: target.minKB === null ? null : Math.round(target.minKB * 1024),
+            maxBytes,
+          },
+          codec,
+          { signal: controller.signal },
+        );
+
+        const uri = await writeDocument(outcome.bytes, 'pdf');
+        setDocumentResult({
+          uri,
+          sourceBytes: documentSource.bytes,
+          finalBytes: outcome.finalBytes,
+          pageCount: outcome.pageCount,
+          imagesRecompressed: outcome.imagesRecompressed,
+          imagesSkipped: outcome.imagesSkipped,
+          status: outcome.status,
+        });
+        if (outcome.finalBytes <= maxBytes) successFeedback();
+        else errorFeedback();
+        setTargetLabel(describeTarget(target, t));
+        setPendingTarget(target);
+        setScreen('document');
+        setRecents(await rememberTarget(target));
+      } catch (cause) {
+        setError(explain(cause, t));
+      } finally {
+        abortRef.current = null;
+        setBusy(false);
+      }
+    },
+    [documentSource, t],
+  );
+
+  const saveDocument = useCallback(async () => {
+    if (!documentResult) return;
+    setSaving(true);
+    try {
+      const outcome = await savePdf(documentResult.uri);
+      if (outcome.ok) {
+        setSavedMessage(t('result.downloaded'));
+        setScreen('result');
+        return;
+      }
+      setError(
+        outcome.reason === 'unavailable'
+          ? t('error.shareUnavailable')
+          : t('error.saveFailed', { detail: outcome.detail ?? '' }),
+      );
+    } finally {
+      setSaving(false);
+    }
+  }, [documentResult, t]);
 
   const runCompression = useCallback(
     async (target: TargetSpec, turn: Rotation = 0) => {
@@ -446,8 +545,9 @@ function SizeFit() {
           : Math.max(...sizes, 0);
       return Math.max(1, Math.floor(bytes / 1024));
     }
+    if (documentSource) return Math.max(1, Math.floor(documentSource.bytes / 1024));
     return Math.max(1, Math.floor((source?.bytes ?? 1024) / 1024));
-  }, [batch, pendingTarget.output, source]);
+  }, [batch, pendingTarget.output, source, documentSource]);
 
   const outputUri = manual?.uri ?? result?.outputUri ?? null;
 
@@ -534,6 +634,8 @@ function SizeFit() {
     setRotation(0);
     setBatch([]);
     setPdf(null);
+    setDocumentSource(null);
+    setDocumentResult(null);
     setBatchProgress(null);
     setSource(null);
     setRequest(null);
@@ -605,18 +707,21 @@ function SizeFit() {
         />
       ) : null}
 
-      {screen === 'target' && (source || batch.length > 0) ? (
+      {screen === 'target' && (source || documentSource || batch.length > 0) ? (
         <TargetScreen
           theme={theme}
           t={t}
           sourceLabel={sourceLabel}
           initialTarget={pendingTarget}
           fileCount={batch.length > 0 ? batch.length : 1}
+          documentMode={documentSource !== null}
           sourceKB={sourceCeilingKB}
           onBack={() => void reset()}
-          onConfirm={(target) =>
-            batch.length > 0 ? void runBatch(target) : void runCompression(target)
-          }
+          onConfirm={(target) => {
+            if (batch.length > 0) return void runBatch(target);
+            if (documentSource) return void runDocumentCompression(target);
+            return void runCompression(target);
+          }}
         />
       ) : null}
 
@@ -664,13 +769,27 @@ function SizeFit() {
         />
       ) : null}
 
+      {screen === 'document' && documentResult ? (
+        <DocumentScreen
+          theme={theme}
+          t={t}
+          outcome={documentResult}
+          targetLabel={targetLabel}
+          maxBytes={Math.round(pendingTarget.maxKB * 1024)}
+          saving={saving}
+          onBack={() => setScreen('target')}
+          onSave={() => void saveDocument()}
+          onChangeSize={() => setScreen('target')}
+        />
+      ) : null}
+
       {screen === 'result' ? (
         <ResultScreen
           theme={theme}
           t={t}
           savedMessage={savedMessage}
-          savedPath={pdf?.uri ?? outputUri}
-          finalBytes={pdf?.bytes ?? manual?.bytes ?? result?.finalBytes ?? 0}
+          savedPath={documentResult?.uri ?? pdf?.uri ?? outputUri}
+          finalBytes={documentResult?.finalBytes ?? pdf?.bytes ?? manual?.bytes ?? result?.finalBytes ?? 0}
           targetLabel={targetLabel}
           onCompressAnother={() => void reset()}
           onDone={() => void reset()}

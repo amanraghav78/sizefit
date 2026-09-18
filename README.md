@@ -236,6 +236,52 @@ search rather than transforming the finished file, which is what keeps the size
 guarantee true for the rotated image. A rotated file is also never passed
 through untouched.
 
+## PDF input
+
+Until now a PDF could only come *out* of this app. It can now go in: pick a
+PDF and it is compressed to the same size targets an image gets.
+
+A scanned document is a thin container around one big JPEG per page, so the
+file is not rasterised and no page is re-rendered. `compressPdf` walks the
+object graph, pulls out every image XObject whose filter is `/DCTDecode` —
+those stream bytes *are* a JPEG file — runs each one back through the same
+`ImageCodec` port §5 uses, and writes it into place. Text, vectors and the page
+tree are untouched, so words stay sharp and selectable while the photographic
+bulk shrinks.
+
+The search is the familiar one: measure, and charge the overshoot to the image
+bytes alone, since the structure will not move. Scale is the main lever and
+quality is the second, walked only once pixels reach a 200px floor. Capped at
+six rebuild rounds, because each round re-encodes every page.
+
+**What it deliberately will not do.** A PDF whose weight is text, fonts or
+vector art has nothing here to recompress, and comes back close to its original
+size with `best_effort_over` and a plain sentence saying so, rather than a
+wrong promise. Rasterising those pages would need a PDF renderer — a native
+module this project does not carry — and would turn selectable text into
+pixels. Images in any other encoding (flate-coded scans, JPEG 2000, CCITT fax,
+1-bit masks) are counted in `imagesSkipped` and reported on screen, not
+silently dropped: re-encoding those means decoding raw samples against their
+colour space, which the codec port does not accept.
+
+Other notes:
+
+- **Detection is by header, not extension.** A file picked as `.pdf` can be
+  anything, and `probe` decodes as an image, so it would throw on a document.
+  `detectFormat` looks for `%PDF-` at byte zero before any of that happens.
+- **The document is always rewritten, even when it already fits.** A PDF
+  carries an `/Info` dictionary naming the scanner app that produced it, so
+  there is no clean passthrough the way there is for an image (§10).
+- **Object streams are off.** They save a fraction of a percent here and cost
+  compatibility with older readers — the wrong trade for a file someone is
+  about to upload to a government portal.
+- **The Target screen hides pixel size, resize mode and format for a PDF.**
+  None of them mean anything for a document; only the byte ceiling does.
+- **There is no preview.** Rendering a page needs the renderer this feature
+  exists to avoid. The Document screen answers what someone actually wants to
+  know before uploading instead: does it fit, how many pages, was anything
+  left untouched.
+
 ## The website
 
 The same codebase ships as a static website. This is not a preview of the app —

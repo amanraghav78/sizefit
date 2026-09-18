@@ -20,6 +20,10 @@ export function detectFormat(head: Uint8Array): ProbeResult['format'] {
   if (head.length >= 3 && head[0] === 0xff && head[1] === 0xd8 && head[2] === 0xff) {
     return 'jpeg';
   }
+  // "%PDF-" — the header the spec requires at byte zero.
+  if (head.length >= 5 && ascii(head, 0, 5) === '%PDF-') {
+    return 'pdf';
+  }
   if (
     head.length >= 8 &&
     head[0] === 0x89 &&
@@ -54,6 +58,10 @@ export function hasMetadata(head: Uint8Array): boolean {
       return pngHasMetadata(head);
     case 'heic':
       return true; // HEIC is always re-encoded anyway
+    case 'pdf':
+      // A PDF's /Info dictionary and any XMP packet are rewritten by
+      // pdfCompress, so a PDF is never passed through untouched either.
+      return true;
     default:
       return true;
   }

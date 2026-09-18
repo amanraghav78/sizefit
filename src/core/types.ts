@@ -57,7 +57,7 @@ export interface ProbeResult {
   width: number;
   height: number;
   bytes: number;
-  format: ImageFormat | 'heic' | 'other';
+  format: ImageFormat | 'heic' | 'pdf' | 'other';
   /**
    * True if the file carries EXIF/XMP/GPS metadata. A source that carries
    * metadata can never be passed through untouched — acceptance test 7

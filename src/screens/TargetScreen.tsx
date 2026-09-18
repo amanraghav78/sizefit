@@ -38,6 +38,7 @@ export function TargetScreen({
   sourceLabel,
   initialTarget,
   fileCount,
+  documentMode = false,
   sourceKB,
   onBack,
   onConfirm,
@@ -48,6 +49,12 @@ export function TargetScreen({
   initialTarget: TargetSpec;
   /** More than one file unlocks the output section. */
   fileCount: number;
+  /**
+   * The source is a PDF. Pixel size, resize mode and image format are all
+   * meaningless for a document — only the byte ceiling applies — so those
+   * controls are hidden rather than shown doing nothing.
+   */
+  documentMode?: boolean;
   /**
    * Size of what is being compressed, in KB. For a batch this is the largest
    * single file, or the total when the output is one PDF, because that is what
@@ -181,6 +188,11 @@ export function TargetScreen({
           </Muted>
         </Card>
 
+        {documentMode ? (
+          <Muted theme={theme} style={typography.caption}>
+            {t('target.documentNote')}
+          </Muted>
+        ) : (
         <View style={styles.group}>
           <Text style={[typography.label, { color: theme.textMuted }]}>{t('target.pixelSize')}</Text>
           <View style={styles.chipGrid}>
@@ -196,6 +208,7 @@ export function TargetScreen({
             ))}
           </View>
         </View>
+        )}
 
         {fileCount > 1 ? (
           <View style={styles.group}>
@@ -267,6 +280,8 @@ export function TargetScreen({
                 />
               </Row>
 
+              {documentMode ? null : (
+              <>
               <Row style={styles.fieldRow}>
                 <Field
                   label={t('target.width')}
@@ -322,6 +337,8 @@ export function TargetScreen({
                   {t('target.pngHelp')}
                 </Muted>
               ) : null}
+              </>
+              )}
 
               {!maxValid ? (
                 <Chip label={t('target.errorNeedMax')} theme={theme} tone="danger" />
@@ -341,9 +358,11 @@ export function TargetScreen({
               {describeBand(target.minKB, target.maxKB, t)}
             </Text>
             <Text style={[typography.caption, { color: theme.textMuted }]}>
-              {target.widthPx !== null && target.heightPx !== null
-                ? `${target.widthPx} × ${target.heightPx} px · ${target.format.toUpperCase()}`
-                : `${t('target.originalPixelSize')} · ${target.format.toUpperCase()}`}
+              {documentMode
+                ? 'PDF'
+                : target.widthPx !== null && target.heightPx !== null
+                  ? `${target.widthPx} × ${target.heightPx} px · ${target.format.toUpperCase()}`
+                  : `${t('target.originalPixelSize')} · ${target.format.toUpperCase()}`}
             </Text>
           </View>
         </Row>
