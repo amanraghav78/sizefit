@@ -117,9 +117,6 @@ the open items below.
 - **EXIF rotation and metadata stripping on device** are assumed from
   expo-image-manipulator's documented behaviour, not yet verified on hardware.
   Both are marked with a `NOTE:` in the codec.
-- **PNG below a floor.** PNG is lossless, so there is no quality lever and the
-  JPEG comment trick does not apply. Such requests return `best_effort_under`.
-  Worth deciding in Phase 3 whether the UI should steer these users to JPEG.
 - **Acceptance tests 8, 10, 11, 12** (airplane mode, ad gating, cache empty after
   restart, permission denial) need a device and, for 10, Phase 6.
 
@@ -135,7 +132,7 @@ users arrive already knowing the numbers their form demands.
   600x800 — labelled by what they are for (photo, signature, thumb print,
   declaration, square, portrait)
 - **Exact numbers**: type any minimum, maximum, width and height, choose how to
-  resize (keep / fit inside / exact) and the output format
+  resize (keep / fill / fit inside / exact) and the output format
 
 A named-organisation preset library was built and then removed at the owner's
 request. The tradeoff: less hand-holding for someone who does not know their
@@ -288,6 +285,85 @@ Other notes:
   exists to avoid. The Document screen answers what someone actually wants to
   know before uploading instead: does it fit, how many pages, was anything
   left untouched.
+
+## PNG below a floor — steering to JPEG
+
+The Phase 3 open item, now decided: the UI offers the switch.
+
+Measuring it first changed the shape of the fix. The assumption was that PNG
+cannot meet a **ceiling**; against the fixtures it usually can, by downscaling.
+Where PNG is genuinely stuck is the **floor**, and only once the dimensions are
+pinned — with `dimensionMode: "exact"` it may not shrink its way anywhere, so it
+encodes to whatever size it encodes to and has no way to climb. §5 Step 4's
+padding, which is what lets JPEG land exactly on a minimum, is JPEG-only,
+because the trick is a JPEG `0xFFFE` comment segment.
+
+The measured gap, pinned by tests in `realImages.test.ts`:
+
+| Fixture | Target | As PNG | As JPEG |
+|---|---|---|---|
+| `screenshot-phone.png` | 200×230, 20–50 KB | 1.5 KB `best_effort_under` | 20.0 KB `exact` |
+| `transparent-logo.png` | 240×240, 20–50 KB | 5.2 KB `best_effort_under` | 20.0 KB `exact` |
+| `signature-scan.png` | 140×60, 20–50 KB | 2.2 KB `best_effort_under` | 20.0 KB `exact` |
+| `high-contrast-barcode.png` | 350×350, 30–60 KB | 2.5 KB `best_effort_under` | 30.0 KB `exact` |
+
+A form that demands a 20 KB minimum rejects a 1.5 KB file, and the user is left
+with a disabled quality slider and no explanation. So when the output is PNG
+and it misses the band in either direction, Preview says why and offers
+**Switch to JPEG** in one tap.
+
+Two details:
+
+- **Switching re-runs the whole §5 search rather than converting the finished
+  file.** Only a fresh search can still guarantee the ceiling for the JPEG.
+- **The flattening caveat is shown every time, not only for images that have an
+  alpha channel.** The codec port does not report transparency, and a surprise
+  solid block where the transparency used to be is worse than a caveat that
+  sometimes does not apply. It says "filled with a solid colour" rather than
+  naming white, because the native flatten gap above means Android may not
+  give white.
+
+## Named pixel sizes now deliver that size
+
+A bug worth writing down, because the fix changes what the app does to
+someone's photo.
+
+The pixel presets were applied as `fit`, which scales an image to sit *inside*
+the box. That only yields the selected size when the source already shares the
+box's aspect ratio, so "Square 350 × 350" on an ordinary 4:3 photo produced
+**350 × 263**, and "Signature 140 × 60" on a portrait photo produced **45 × 60**.
+Measured across 3 sources × 6 presets, **15 of 18 combinations missed**; the 3
+that matched did so only by coincidence of aspect ratio.
+
+Presets now use a new `fill` mode: scale until the box is covered, then
+centre-crop the overflow. The output is exactly the selected width and height,
+with nothing squashed. The cost is the trimmed edges, which is the trade every
+passport-photo tool makes and the one a form expects.
+
+How it is built:
+
+- **`DimensionMode` gains `fill`**, and `RenderRequest` gains a required
+  `fit: 'stretch' | 'cover'`. Required, not defaulted — a codec that silently
+  ignored it would hand back the wrong shape, which is the bug being fixed.
+  Making it required is what surfaced the two call sites that also needed it.
+- **All three codecs implement `cover`.** sharp uses its own `fit: 'cover'`;
+  expo-image-manipulator has no cover mode, so it crops the largest centred
+  rectangle of the target aspect ratio and then resizes; the canvas codec
+  computes the same rectangle and passes it as the source rect to `drawImage`.
+- **The web codec now settles rotation into an upright intermediate canvas
+  first.** Cropping and rotating in one pass means mapping the crop rectangle
+  back through the rotation, which is easy to get subtly wrong and invisible
+  in a unit test.
+- **`fill` is a hard dimension constraint, like `exact`.** The §5 Step 3
+  downscale fallback and the Step 4 upscale are both closed to it, because
+  shrinking the image would break the promise the user just selected. The
+  byte ceiling still outranks everything; it is met with quality alone.
+- **`fit` is still there**, now as an explicit choice in the advanced section
+  rather than what a preset silently applies.
+
+The whole 5 sources × 6 presets matrix is pinned in `realImages.test.ts`, along
+with a check that a panorama forced to a square comes back cropped rather than
+distorted.
 
 ## The website
 

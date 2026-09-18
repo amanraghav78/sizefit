@@ -46,6 +46,9 @@ export interface ResolveInput {
  *
  * - `exact`   — exactly W×H, aspect distortion allowed. If only one axis is
  *               given the other follows the source aspect ratio.
+ * - `fill`    — exactly W×H with no distortion: the codec scales to cover the
+ *               box and centre-crops the overflow. Dimensions resolve the same
+ *               as `exact`; the difference is in how the codec gets there.
  * - `fit`     — scale so the image fits inside the W×H box, preserving aspect.
  *               Never upscales here; the §5 Step 4 floor fallback may later
  *               grow the image, but only up to the box.
@@ -59,7 +62,7 @@ export function resolveTargetDimensions(input: ResolveInput): Dimensions {
     return capped;
   }
 
-  if (mode === 'exact') {
+  if (mode === 'exact' || mode === 'fill') {
     if (targetWidth !== null && targetHeight !== null) {
       return { width: px(targetWidth), height: px(targetHeight) };
     }

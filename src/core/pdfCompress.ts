@@ -271,6 +271,9 @@ async function rebuild(
       format: 'jpeg',
       quality,
       rotate: 0,
+      // The page image is scaled by a factor, so width/height already carry its
+      // own aspect ratio — there is nothing to crop.
+      fit: 'stretch',
       flattenBackground: options.flattenBackground ?? '#FFFFFF',
     });
     const bytes = await codec.readBytes(encoded.uri);

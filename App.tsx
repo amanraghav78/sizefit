@@ -107,6 +107,9 @@ function SizeFit() {
   // the search so the size guarantee still holds for the rotated image.
   const [rotation, setRotation] = useState<Rotation>(0);
   const [rotating, setRotating] = useState(false);
+  // Switching a PNG to JPEG re-runs the whole §5 search rather than converting
+  // the finished file, so the size guarantee holds for the JPEG too.
+  const [switching, setSwitching] = useState(false);
 
   // One codec per run: it owns the temp files and the decoded source, and must
   // stay alive while Preview lets the user re-encode.
@@ -500,6 +503,9 @@ function SizeFit() {
           width: result.finalWidth,
           height: result.finalHeight,
           format: request.format,
+          // Match the search that produced these dimensions, or a cropped
+          // result would silently letterbox the moment the user nudged quality.
+          fit: request.dimensionMode === 'fill' ? 'cover' : 'stretch',
           quality,
           flattenBackground: '#FFFFFF',
           rotate: rotation,
@@ -515,6 +521,23 @@ function SizeFit() {
   );
 
   /** Rotate and re-run, so the size guarantee still holds after the turn. */
+  /**
+   * PNG is lossless: no quality lever, and the §5 Step 4 padding trick is
+   * JPEG-only, so a PNG that misses the band cannot be argued into it. The
+   * whole search is re-run as JPEG rather than converting the finished file,
+   * because only a fresh search can still guarantee the ceiling.
+   */
+  const switchToJpeg = useCallback(async () => {
+    tapFeedback();
+    setSwitching(true);
+    try {
+      const asJpeg: TargetSpec = { ...pendingTarget, format: 'jpeg' };
+      await runCompression(asJpeg, rotation);
+    } finally {
+      setSwitching(false);
+    }
+  }, [pendingTarget, rotation, runCompression]);
+
   const applyRotation = useCallback(
     async (next: Rotation) => {
       tapFeedback();
@@ -761,6 +784,8 @@ function SizeFit() {
           onRotate={(next) => void applyRotation(next)}
           onQualityCommit={(quality) => void previewQuality(quality)}
           onResetManual={() => setManual(null)}
+          onSwitchToJpeg={() => void switchToJpeg()}
+          switching={switching}
           onBack={() => setScreen('target')}
           onSave={() => void save()}
           onShare={() => void share()}

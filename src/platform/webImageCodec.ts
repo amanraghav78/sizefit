@@ -67,19 +67,47 @@ export class WebImageCodec implements ImageCodec {
       context.fillStyle = req.flattenBackground;
       context.fillRect(0, 0, req.width, req.height);
     }
-    if (req.rotate === 0) {
-      context.drawImage(bitmap, 0, 0, req.width, req.height);
+    // Rotation is settled first, into an upright intermediate, so the crop
+    // below can work in plain image coordinates. Doing both in one pass means
+    // mapping a crop rectangle back through the rotation, which is easy to get
+    // subtly wrong and impossible to see in a unit test.
+    const quarter = req.rotate === 90 || req.rotate === 270;
+    const sourceWidth = quarter ? bitmap.height : bitmap.width;
+    const sourceHeight = quarter ? bitmap.width : bitmap.height;
+
+    let source: CanvasImageSource = bitmap;
+    if (req.rotate !== 0) {
+      const upright = document.createElement('canvas');
+      upright.width = sourceWidth;
+      upright.height = sourceHeight;
+      const uprightContext = upright.getContext('2d');
+      if (!uprightContext) throw new Error('WebImageCodec: 2D canvas context unavailable');
+      uprightContext.translate(sourceWidth / 2, sourceHeight / 2);
+      uprightContext.rotate((req.rotate * Math.PI) / 180);
+      uprightContext.drawImage(bitmap, -bitmap.width / 2, -bitmap.height / 2);
+      source = upright;
+    }
+
+    if (req.fit === 'cover') {
+      // Take the largest centred rectangle of the source that has the target's
+      // aspect ratio, and let drawImage scale it to fill. Nothing is distorted;
+      // the overflow on the long axis is what gets cut.
+      const scale = Math.max(req.width / sourceWidth, req.height / sourceHeight);
+      const cropWidth = Math.min(sourceWidth, req.width / scale);
+      const cropHeight = Math.min(sourceHeight, req.height / scale);
+      context.drawImage(
+        source,
+        (sourceWidth - cropWidth) / 2,
+        (sourceHeight - cropHeight) / 2,
+        cropWidth,
+        cropHeight,
+        0,
+        0,
+        req.width,
+        req.height,
+      );
     } else {
-      // Rotate about the canvas centre. For a quarter turn the drawn box is
-      // the canvas with its axes swapped, because req.width/height already
-      // describe the rotated result.
-      const quarter = req.rotate === 90 || req.rotate === 270;
-      const drawWidth = quarter ? req.height : req.width;
-      const drawHeight = quarter ? req.width : req.height;
-      context.translate(req.width / 2, req.height / 2);
-      context.rotate((req.rotate * Math.PI) / 180);
-      context.drawImage(bitmap, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
-      context.setTransform(1, 0, 0, 1, 0, 0);
+      context.drawImage(source, 0, 0, sourceWidth, sourceHeight, 0, 0, req.width, req.height);
     }
 
     const blob = await canvasToBlob(canvas, req.format, req.quality / 100);

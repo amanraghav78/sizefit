@@ -14,6 +14,12 @@ import { compress } from '../src/core/compress';
 import { CorruptInputError } from '../src/core/errors';
 import { hasMetadata } from '../src/core/sniff';
 import type { CompressRequest, CompressResult } from '../src/core/types';
+import {
+  defaultTarget,
+  dimensionOptions,
+  targetToRequest,
+  type TargetSpec,
+} from '../src/data/sizeOptions';
 import { FIXTURE_DIR, generateFixtures } from './fixtures/generate';
 import { SharpCodec } from './sharpCodec';
 
@@ -394,3 +400,154 @@ async function run(
 function hasHeicFixture(): boolean {
   return fixtures.some((f) => f.endsWith('.heic'));
 }
+
+/**
+ * The gap the Preview screen's PNG steering exists to close.
+ *
+ * PNG is lossless: there is no quality lever, and the §5 Step 4 padding
+ * fallback is JPEG-only. Measured against the fixtures, that bites in one
+ * specific place — the FLOOR, not the ceiling. PNG can still meet a ceiling by
+ * downscaling, but when the dimensions are pinned it encodes to whatever size
+ * it encodes to, lands far under the requested minimum, and has no way back up.
+ * JPEG reaches the same floor exactly, by padding.
+ *
+ * These pin that difference, because the steering would be pointless advice if
+ * it were not true.
+ */
+describe('PNG cannot reach a floor that JPEG can', () => {
+  const pinned = (width: number, height: number, minKB: number, maxKB: number) => ({
+    minBytes: minKB * KB,
+    maxBytes: maxKB * KB,
+    targetWidth: width,
+    targetHeight: height,
+    // Pinned dimensions are what removes PNG's last lever: it may not downscale
+    // its way to a size, so the encoder's own output is the only answer it has.
+    dimensionMode: 'exact' as const,
+  });
+
+  const cases: Array<{ fixture: string; width: number; height: number; min: number; max: number }> = [
+    { fixture: 'screenshot-phone.png', width: 200, height: 230, min: 20, max: 50 },
+    { fixture: 'transparent-logo.png', width: 240, height: 240, min: 20, max: 50 },
+    { fixture: 'signature-scan.png', width: 140, height: 60, min: 20, max: 50 },
+    { fixture: 'high-contrast-barcode.png', width: 350, height: 350, min: 30, max: 60 },
+  ];
+
+  for (const { fixture, width, height, min, max } of cases) {
+    it(`${fixture} lands under the floor as PNG and on it as JPEG`, async () => {
+      const sourceUri = join(FIXTURE_DIR, fixture);
+      const spec = pinned(width, height, min, max);
+
+      const asPng = await compress({ ...spec, sourceUri, format: 'png' }, codec);
+      const asJpeg = await compress({ ...spec, sourceUri, format: 'jpeg' }, codec);
+
+      // PNG: under the ceiling, which it never breaks, but below the minimum
+      // the form asked for — and with no lever left to climb.
+      expect(asPng.status).toBe('best_effort_under');
+      expect(asPng.finalBytes).toBeLessThan(min * KB);
+
+      // JPEG: inside the band. This is the offer the UI makes.
+      expect(asJpeg.status).toBe('exact');
+      expect(asJpeg.finalBytes).toBeGreaterThanOrEqual(min * KB);
+      expect(asJpeg.finalBytes).toBeLessThanOrEqual(max * KB);
+    });
+  }
+
+  it('holds the ceiling as PNG even while missing the floor', async () => {
+    // The guarantee that outranks everything else still applies to the format
+    // the user is being steered away from.
+    const sourceUri = join(FIXTURE_DIR, 'screenshot-phone.png');
+    const result = await compress(
+      { ...pinned(200, 230, 20, 50), sourceUri, format: 'png' },
+      codec,
+    );
+    expect(result.finalBytes).toBeLessThanOrEqual(50 * KB);
+  });
+});
+
+/**
+ * A named pixel size must actually deliver that pixel size.
+ *
+ * The presets were previously applied as `fit`, which scales the image to sit
+ * INSIDE the box. That only produces the selected size when the source already
+ * shares its aspect ratio — a 4:3 photo asked for 350×350 came back 350×263,
+ * and "Signature 140×60" on a portrait photo came back 45×60. 15 of 18
+ * source/preset combinations missed.
+ *
+ * `fill` covers the box and centre-crops the overflow, so the label is the
+ * truth. This walks the whole matrix that used to fail.
+ */
+describe('named pixel sizes deliver exactly what they say', () => {
+  const sources = [
+    'phone-photo-landscape.jpg',
+    'phone-photo-portrait.jpg',
+    'square-passport.jpg',
+    'panorama-wide.jpg',
+    'tall-narrow.jpg',
+  ];
+
+  for (const fixture of sources) {
+    for (const option of dimensionOptions) {
+      if (option.widthPx === null || option.heightPx === null) continue;
+
+      it(`${fixture} → ${option.detail}`, async () => {
+        const target: TargetSpec = {
+          ...defaultTarget,
+          maxKB: 200,
+          widthPx: option.widthPx,
+          heightPx: option.heightPx,
+          // Exactly what tapping the preset on the Target screen now sets.
+          dimensionMode: 'fill',
+        };
+        const result = await compress(
+          targetToRequest(target, join(FIXTURE_DIR, fixture)),
+          codec,
+        );
+
+        expect(result.finalWidth).toBe(option.widthPx);
+        expect(result.finalHeight).toBe(option.heightPx);
+        // The ceiling still outranks everything, including the new promise.
+        expect(result.finalBytes).toBeLessThanOrEqual(200 * KB);
+      });
+    }
+  }
+
+  it('crops rather than distorts: the kept region has the target aspect ratio', async () => {
+    // A panorama squeezed into a square would be unmistakably squashed. Proof
+    // that it is not: the output is a centre slice of the original, so a
+    // vertical strip down the middle survives unchanged in proportion.
+    const target: TargetSpec = {
+      ...defaultTarget,
+      maxKB: 500,
+      widthPx: 350,
+      heightPx: 350,
+      dimensionMode: 'fill',
+    };
+    const result = await compress(
+      targetToRequest(target, join(FIXTURE_DIR, 'panorama-wide.jpg')),
+      codec,
+    );
+    expect(result.finalWidth).toBe(350);
+    expect(result.finalHeight).toBe(350);
+
+    const meta = await sharp(result.outputUri).metadata();
+    expect(meta.width).toBe(350);
+    expect(meta.height).toBe(350);
+  });
+
+  it('still fits inside the box when the mode is fit, which is now opt-in', async () => {
+    // The old behaviour is not gone, just no longer what a preset selects.
+    const target: TargetSpec = {
+      ...defaultTarget,
+      maxKB: 200,
+      widthPx: 350,
+      heightPx: 350,
+      dimensionMode: 'fit',
+    };
+    const result = await compress(
+      targetToRequest(target, join(FIXTURE_DIR, 'phone-photo-landscape.jpg')),
+      codec,
+    );
+    expect(Math.max(result.finalWidth, result.finalHeight)).toBeLessThanOrEqual(350);
+    expect(result.finalHeight).toBeLessThan(350);
+  });
+});

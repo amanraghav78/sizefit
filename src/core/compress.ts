@@ -119,6 +119,10 @@ export async function compress(
       quality,
       flattenBackground,
       rotate,
+      // 'fill' is the only mode that asks the codec to crop; every other mode
+      // has already resolved to aspect-correct dimensions, so stretching is a
+      // no-op for them.
+      fit: request.dimensionMode === 'fill' ? 'cover' : 'stretch',
     });
     iterations += 1;
     return { image, size: image.bytes, dims, quality };
@@ -149,7 +153,10 @@ export async function compress(
     }
     if (round.bestUnder !== null) break; // under the ceiling but below the floor
 
-    if (request.dimensionMode === 'exact') break; // dimensions are a hard constraint
+    // 'exact' and 'fill' both promise a specific pixel size, so the downscale
+    // fallback is not available to them — shrinking would break the promise the
+    // user selected.
+    if (request.dimensionMode === 'exact' || request.dimensionMode === 'fill') break;
     if (downscales >= MAX_DOWNSCALE_ROUNDS) break;
     const overshoot = round.smallestOver;
     const next =
@@ -164,7 +171,7 @@ export async function compress(
   // §5 Step 4: below the floor. Try growing the image, then pad.
   const under = best.under;
   if (under !== null && request.minBytes !== null && under.size < request.minBytes) {
-    if (request.dimensionMode !== 'exact') {
+    if (request.dimensionMode !== 'exact' && request.dimensionMode !== 'fill') {
       const bound = fitBound(request);
       let current = under.dims;
       for (let i = 0; i < MAX_UPSCALE_ROUNDS; i += 1) {

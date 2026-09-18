@@ -48,6 +48,8 @@ export function PreviewScreen({
   onRotate,
   onQualityCommit,
   onResetManual,
+  onSwitchToJpeg,
+  switching,
   onBack,
   onSave,
   onShare,
@@ -68,6 +70,9 @@ export function PreviewScreen({
   /** Fires when the finger lifts — re-encoding on every pixel would thrash. */
   onQualityCommit: (quality: number) => void;
   onResetManual: () => void;
+  /** PNG has no quality lever; this re-runs the whole search as JPEG. */
+  onSwitchToJpeg: () => void;
+  switching: boolean;
   onBack: () => void;
   onSave: () => void;
   onShare: () => void;
@@ -250,6 +255,39 @@ export function PreviewScreen({
             />
           ) : null}
         </Card>
+
+        {/* PNG is lossless: there is no quality lever and the JPEG padding
+            trick does not apply, so a PNG that misses the band cannot be
+            argued into it. Saying only "over the limit" would leave the user
+            fiddling with a disabled slider, so the one thing that does work is
+            offered directly. */}
+        {request.format === 'png' && (overCeiling || underFloor) ? (
+          <Card theme={theme} style={{ borderColor: theme.warning }}>
+            <Text style={[typography.heading, { color: theme.text }]}>
+              {t('preview.pngSteerTitle')}
+            </Text>
+            <Muted theme={theme}>
+              {overCeiling
+                ? t('preview.pngSteerOver', { limit: formatKB(request.maxBytes) })
+                : t('preview.pngSteerUnder', { min: formatKB(request.minBytes ?? 0) })}
+            </Muted>
+            {/* Stated every time rather than only for images that have alpha:
+                the codec port does not report transparency, and a surprise
+                white block is worse than a caveat that sometimes does not
+                apply. */}
+            <Muted theme={theme} style={typography.caption}>
+              {t('preview.pngSteerFlatten')}
+            </Muted>
+            <Button
+              label={switching ? t('preview.pngSwitching') : t('preview.pngSwitch')}
+              onPress={onSwitchToJpeg}
+              theme={theme}
+              icon="swap-horizontal-outline"
+              busy={switching}
+              disabled={busy}
+            />
+          </Card>
+        ) : null}
 
         {overCeiling ? (
           <Card theme={theme} style={{ borderColor: theme.danger }}>

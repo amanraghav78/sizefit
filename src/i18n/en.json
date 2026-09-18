@@ -29,7 +29,7 @@
   "mode.fit": "Fit inside",
   "mode.exact": "Exact",
   "mode.keepHelp": "Leaves the picture at its own size and changes only the file size.",
-  "mode.fitHelp": "Scales the picture to sit inside this box without distorting it.",
+  "mode.fitHelp": "Scales the picture to sit inside this box without distorting it. The result may be smaller than the box on one side.",
   "mode.exactHelp": "Resizes to exactly this width and height, stretching if needed. Use it when the form insists on precise pixels.",
   "dim.keep": "Keep as is",
   "dim.keepDetail": "No resizing",
@@ -164,5 +164,13 @@
   "document.changeSize": "Change the size",
   "document.compressing": "Compressing the document…",
   "target.documentNote": "Pixel size and format do not apply to a PDF — only the file size does.",
-  "error.encryptedPdf": "That PDF is password-protected, so it cannot be opened here. Remove the password in your PDF reader and try again."
+  "error.encryptedPdf": "That PDF is password-protected, so it cannot be opened here. Remove the password in your PDF reader and try again.",
+  "preview.pngSteerTitle": "PNG cannot hit this size",
+  "preview.pngSteerOver": "PNG is lossless — it has no quality setting to turn down, so it cannot be squeezed under {limit}. JPEG can reach it.",
+  "preview.pngSteerUnder": "PNG is lossless, so its size cannot be tuned to land above {min}. JPEG can be adjusted to sit inside the range.",
+  "preview.pngSteerFlatten": "Any transparent areas will be filled with a solid colour.",
+  "preview.pngSwitch": "Switch to JPEG",
+  "preview.pngSwitching": "Re-compressing as JPEG…",
+  "mode.fill": "Fill (crop)",
+  "mode.fillHelp": "Gives you exactly this width and height without distorting the picture, by trimming whatever does not fit. This is what the pixel sizes above use."
 }

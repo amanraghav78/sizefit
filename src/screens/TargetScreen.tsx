@@ -106,9 +106,12 @@ export function TargetScreen({
       ...current,
       widthPx: option.widthPx,
       heightPx: option.heightPx,
-      // Picking a named pixel size means you want that size; keeping the
-      // aspect ratio inside it is the safe reading of "200 x 230".
-      dimensionMode: option.widthPx === null ? 'preserve' : 'fit',
+      // Picking a named pixel size means you want that size — so deliver it.
+      // 'fit' was the old behaviour and it only ever produced the selected size
+      // when the source aspect ratio already matched: a 4:3 photo asked for
+      // 350x350 came back 350x263. 'fill' covers the box and crops the
+      // overflow, so the label is the truth.
+      dimensionMode: option.widthPx === null ? 'preserve' : 'fill',
     }));
     setWidthText(option.widthPx?.toString() ?? '');
     setHeightText(option.heightPx?.toString() ?? '');
@@ -312,6 +315,7 @@ export function TargetScreen({
                 }
                 options={[
                   { value: 'preserve', label: t('mode.keep') },
+                  { value: 'fill', label: t('mode.fill') },
                   { value: 'fit', label: t('mode.fit') },
                   { value: 'exact', label: t('mode.exact') },
                 ]}
@@ -437,6 +441,8 @@ function modeHelp(mode: DimensionMode, t: Translate): string {
   switch (mode) {
     case 'exact':
       return t('mode.exactHelp');
+    case 'fill':
+      return t('mode.fillHelp');
     case 'fit':
       return t('mode.fitHelp');
     default:

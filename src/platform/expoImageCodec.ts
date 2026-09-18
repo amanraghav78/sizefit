@@ -69,7 +69,13 @@ export class ExpoImageCodec implements ImageCodec {
     // req.flattenBackground cannot be honoured here yet - a transparent PNG
     // saved as JPEG takes whatever the platform encoder fills alpha with.
     // Core covers the behaviour (§5.3); the device fix is a Phase 4 item.
-    const resized = await this.resizedRef(req.sourceUri, req.width, req.height, req.rotate);
+    const resized = await this.resizedRef(
+      req.sourceUri,
+      req.width,
+      req.height,
+      req.rotate,
+      req.fit,
+    );
     const saved = await resized.saveAsync({
       compress: clampQuality(req.quality),
       format: req.format === 'png' ? SaveFormat.PNG : SaveFormat.JPEG,
@@ -158,8 +164,9 @@ export class ExpoImageCodec implements ImageCodec {
     width: number,
     height: number,
     rotate: number,
+    fit: RenderRequest['fit'],
   ): Promise<ImageRef> {
-    const key = `${sourceUri}@${width}x${height}r${rotate}`;
+    const key = `${sourceUri}@${width}x${height}r${rotate}f${fit}`;
     const cached = this.resized.get(key);
     if (cached) return cached;
 
@@ -173,6 +180,26 @@ export class ExpoImageCodec implements ImageCodec {
     // Rotate before resizing: width/height describe the rotated image.
     let context = ImageManipulator.manipulate(source);
     if (rotate !== 0) context = context.rotate(rotate);
+
+    if (fit === 'cover') {
+      // expo-image-manipulator has no cover mode, so it is done the long way:
+      // crop the largest centred rectangle that already has the target aspect
+      // ratio, then resize that. Cropping first means the resize never has to
+      // distort, which is the whole point.
+      const quarter = rotate === 90 || rotate === 270;
+      const sourceWidth = quarter ? source.height : source.width;
+      const sourceHeight = quarter ? source.width : source.height;
+      const scale = Math.max(width / sourceWidth, height / sourceHeight);
+      const cropWidth = Math.min(sourceWidth, Math.round(width / scale));
+      const cropHeight = Math.min(sourceHeight, Math.round(height / scale));
+      context = context.crop({
+        originX: Math.max(0, Math.round((sourceWidth - cropWidth) / 2)),
+        originY: Math.max(0, Math.round((sourceHeight - cropHeight) / 2)),
+        width: cropWidth,
+        height: cropHeight,
+      });
+    }
+
     const ref = await context.resize({ width, height }).renderAsync();
     this.resized.set(key, ref);
     return ref;

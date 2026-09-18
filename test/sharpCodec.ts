@@ -58,7 +58,13 @@ export class SharpCodec implements ImageCodec {
       // Explicit rotation comes after the EXIF fix-up and before the resize,
       // because req.width/height describe the already-rotated image.
       .rotate(req.rotate)
-      .resize(req.width, req.height, { fit: 'fill' });
+      // 'cover' scales until the box is covered and crops the overflow, which
+      // is how a named pixel size delivers its exact shape without squashing
+      // the picture. 'fill' is the stretch the other modes already expect.
+      .resize(req.width, req.height, {
+        fit: req.fit === 'cover' ? 'cover' : 'fill',
+        position: 'centre',
+      });
 
     const buffer =
       req.format === 'jpeg'

@@ -9,7 +9,7 @@
 
 export type ImageFormat = 'jpeg' | 'png';
 
-export type DimensionMode = 'exact' | 'fit' | 'preserve';
+export type DimensionMode = 'exact' | 'fill' | 'fit' | 'preserve';
 
 export interface CompressRequest {
   sourceUri: string;
@@ -87,6 +87,19 @@ export interface RenderRequest {
    * Ignored for PNG.
    */
   flattenBackground: string;
+  /**
+   * How to reconcile width/height with a source of a different aspect ratio.
+   *
+   * - `stretch` — squash the image into the box. Fast, and correct when the
+   *   caller has already worked out aspect-correct dimensions.
+   * - `cover`   — scale until the box is covered, then centre-crop the
+   *   overflow. The output is exactly width×height with nothing distorted,
+   *   at the cost of the edges.
+   *
+   * Required rather than defaulted: a codec that silently ignored it would
+   * hand back the wrong shape, which is the bug this exists to fix.
+   */
+  fit: 'stretch' | 'cover';
 }
 
 /**
