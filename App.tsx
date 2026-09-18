@@ -828,6 +828,8 @@ function explain(cause: unknown, t: (key: string, values?: Record<string, string
         return t('error.invalidRequest', { detail: cause.message });
       case 'cancelled':
         return t('error.cancelled');
+      case 'encrypted_pdf':
+        return t('error.encryptedPdf');
       default:
         return cause.message;
     }

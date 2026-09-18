@@ -24,7 +24,12 @@
  * and is tested in Node against real scanner-shaped documents.
  */
 import { PDFDocument, PDFName, PDFNumber, PDFRawStream, type PDFRef } from 'pdf-lib';
-import { CancelledError, CorruptInputError, InvalidRequestError } from './errors';
+import {
+  CancelledError,
+  CorruptInputError,
+  EncryptedPdfError,
+  InvalidRequestError,
+} from './errors';
 import type { CompressStatus, ImageCodec } from './types';
 
 /**
@@ -300,13 +305,24 @@ async function save(doc: PDFDocument): Promise<Uint8Array> {
 }
 
 async function load(bytes: Uint8Array): Promise<PDFDocument> {
+  let doc: PDFDocument;
   try {
-    // Scanner output is frequently a little out of spec; refusing to open a
-    // file the user's own reader displays fine would be the wrong call.
-    return await PDFDocument.load(bytes, { ignoreEncryption: false, throwOnInvalidObject: false });
+    // Loaded with encryption ignored so the document can be *inspected* — that
+    // is what makes `isEncrypted` answerable. pdf-lib's own error for a
+    // protected file does not survive as a distinguishable type, so asking the
+    // parsed document is the only reliable way to tell "locked" from "broken".
+    //
+    // Scanner output is also frequently a little out of spec; refusing to open
+    // a file the user's own reader displays fine would be the wrong call.
+    doc = await PDFDocument.load(bytes, { ignoreEncryption: true, throwOnInvalidObject: false });
   } catch (error) {
     throw new CorruptInputError(`Cannot read PDF: ${String(error)}`);
   }
+  // Nothing past this point would work: the streams are ciphertext, so an
+  // image pulled out of one is not a JPEG and writing it back would corrupt a
+  // file that was fine to begin with.
+  if (doc.isEncrypted) throw new EncryptedPdfError();
+  return doc;
 }
 
 /**

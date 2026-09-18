@@ -14,7 +14,7 @@ import { PDFDocument, PDFName, PDFRawStream, StandardFonts, rgb } from 'pdf-lib'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { compressPdf } from '../src/core/pdfCompress';
 import { detectFormat } from '../src/core/sniff';
-import { CorruptInputError, InvalidRequestError } from '../src/core/errors';
+import { CorruptInputError, EncryptedPdfError, InvalidRequestError } from '../src/core/errors';
 import { FIXTURE_DIR, generateFixtures } from './fixtures/generate';
 import { SharpCodec } from './sharpCodec';
 
@@ -227,6 +227,25 @@ describe('compressPdf', () => {
     await expect(
       compressPdf({ sourceUri: path, minBytes: 200 * KB, maxBytes: 100 * KB }, codec),
     ).rejects.toBeInstanceOf(InvalidRequestError);
+  });
+
+  it('tells a password-protected PDF apart from a damaged one', async () => {
+    // A protected file is not broken, so it must not come back as corrupt —
+    // telling someone their bank statement is damaged sends them hunting for a
+    // problem that does not exist.
+    const doc = await PDFDocument.create();
+    doc.addPage([200, 200]);
+    const clean = await doc.save({ useObjectStreams: false });
+    const withEncryptEntry = Buffer.from(
+      Buffer.from(clean).toString('latin1').replace('trailer\n<<', 'trailer\n<< /Encrypt 1 0 R'),
+      'latin1',
+    );
+    const path = join(workDir, `locked-${Date.now()}.pdf`);
+    await writeFile(path, withEncryptEntry);
+
+    await expect(
+      compressPdf({ sourceUri: path, minBytes: null, maxBytes: 100 * KB }, codec),
+    ).rejects.toBeInstanceOf(EncryptedPdfError);
   });
 
   it('rejects a file that is not a PDF', async () => {

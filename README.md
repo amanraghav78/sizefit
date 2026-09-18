@@ -275,6 +275,13 @@ Other notes:
 - **Object streams are off.** They save a fraction of a percent here and cost
   compatibility with older readers — the wrong trade for a file someone is
   about to upload to a government portal.
+- **A password-protected PDF is told apart from a damaged one.** pdf-lib's own
+  error for a protected file does not survive as a distinguishable type, so the
+  document is loaded with encryption ignored purely so `isEncrypted` can be
+  asked, and `EncryptedPdfError` is thrown before anything is touched. The
+  streams of such a file are ciphertext: an image pulled out of one is not a
+  JPEG, and writing it back would corrupt a file that was fine to begin with.
+  The user is told to remove the password, not that their file is damaged.
 - **The Target screen hides pixel size, resize mode and format for a PDF.**
   None of them mean anything for a document; only the byte ceiling does.
 - **There is no preview.** Rendering a page needs the renderer this feature

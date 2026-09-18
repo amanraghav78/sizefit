@@ -136,7 +136,7 @@
   "home.pointOffline": "Works offline",
   "home.pointPrivate": "Nothing uploaded",
   "home.howTitle": "HOW IT WORKS",
-  "home.howStep1": "Pick a photo, or several at once.",
+  "home.howStep1": "Pick a photo or a PDF, or several photos at once.",
   "home.howStep2": "Tap the size your form asks for.",
   "home.howStep3": "Save the file — never over the limit.",
   "preview.before": "BEFORE",
@@ -159,9 +159,10 @@
   "document.saved": "{percent}% smaller.",
   "document.skipped": "{count} image(s) in this PDF could not be recompressed, so they are unchanged. The pages still look the same.",
   "document.noImages": "This PDF is text or line art, not scanned pictures, so there is nothing to compress. It is already as small as this app can make it.",
-  "document.cannotReach": "This document could not be brought under {size} without making the pages unreadable. Allow a larger size, or split the PDF.",
+  "document.cannotReach": "This document could not be brought under {size} without making the pages unreadable. Choose a larger size, or compress fewer pages at a time.",
   "document.save": "Save or share",
   "document.changeSize": "Change the size",
   "document.compressing": "Compressing the document…",
-  "target.documentNote": "Pixel size and format do not apply to a PDF — only the file size does."
+  "target.documentNote": "Pixel size and format do not apply to a PDF — only the file size does.",
+  "error.encryptedPdf": "That PDF is password-protected, so it cannot be opened here. Remove the password in your PDF reader and try again."
 }
