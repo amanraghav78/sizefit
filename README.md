@@ -127,11 +127,24 @@ file is re-encoded from pixels rather than edited.
 
 ## Performance
 
-First Load JS is 106–114KB per page. pdf-lib is ~185KB on its own, so
-`lib/pdfEngine.ts` is imported dynamically at the moment the button is pressed
-rather than at the top of `lib/engine.ts` — otherwise the image compressor, the
-page most people land on, shipped a PDF library it never calls. That one change
-took `/compress-image` from 291KB to 114KB.
+Measured on the built export — the gzipped size of every `<script>` the page
+actually loads — each page ships about **180KB**, and the home page 172KB.
+(Next prints a smaller "First Load JS" figure in its build table; it counts
+differently, so the number above is the one taken straight off the files.)
+
+pdf-lib is the single heaviest dependency, so `lib/pdfEngine.ts` is imported
+dynamically at the moment the button is pressed rather than at the top of
+`lib/engine.ts`. Without that, the image compressor — the page most people land
+on — shipped a PDF library it never calls.
+
+It is worth re-checking after any dependency change, because a stray top-level
+import silently undoes it. The library ends up in its own chunk, and no
+`<script>` on `/compress-image/` should reference it:
+
+```
+grep -l DCTDecode out/_next/static/chunks/*.js     # the pdf chunk
+grep -o '<script src="[^"]*"' out/compress-image/index.html
+```
 
 ## Deploying
 
