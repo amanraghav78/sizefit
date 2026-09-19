@@ -1,13 +1,19 @@
 node_modules/
+
+# Next.js
+.next/
+out/
+next-env.d.ts
+
+# Test artefacts
 test/fixtures/generated/
 test/output/
+
 *.tsbuildinfo
 .DS_Store
-
-# Expo / native
-.expo/
-dist/
-android/
-ios/
-*.orig.*
+.env*.local
 npm-debug.*
+
+# Left over from the Expo app that used to live here; see the README.
+dist/
+.expo/

@@ -8,10 +8,6 @@ const nextConfig = {
   // static host (/compress-image/index.html).
   trailingSlash: true,
   images: { unoptimized: true },
-  // The engine lives outside this package, in ../src/core. It is plain
-  // TypeScript with no React Native or Expo imports, so it compiles here
-  // unchanged — the same code, and the same 163 tests, as the mobile app.
-  outputFileTracingRoot: new URL('..', import.meta.url).pathname,
 };
 
 export default nextConfig;

@@ -7,9 +7,9 @@
  * calls. The PDF tools import this lazily, at the moment the button is
  * pressed, which keeps it off every other page entirely.
  */
-import { buildSizedPdf } from '../../src/core/pdfBuilder';
-import { compressPdf } from '../../src/core/pdfCompress';
-import { WebImageCodec } from '../../src/platform/webImageCodec';
+import { buildSizedPdf } from '../src/core/pdfBuilder';
+import { compressPdf } from '../src/core/pdfCompress';
+import { WebImageCodec } from '../src/platform/webImageCodec';
 import { KB } from './engine';
 
 export interface PdfOutcome {

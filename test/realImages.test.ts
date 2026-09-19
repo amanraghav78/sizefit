@@ -14,12 +14,7 @@ import { compress } from '../src/core/compress';
 import { CorruptInputError } from '../src/core/errors';
 import { hasMetadata } from '../src/core/sniff';
 import type { CompressRequest, CompressResult } from '../src/core/types';
-import {
-  defaultTarget,
-  dimensionOptions,
-  targetToRequest,
-  type TargetSpec,
-} from '../src/data/sizeOptions';
+import { PIXEL_PRESETS } from '../lib/presets';
 import { FIXTURE_DIR, generateFixtures } from './fixtures/generate';
 import { SharpCodec } from './sharpCodec';
 
@@ -486,20 +481,21 @@ describe('named pixel sizes deliver exactly what they say', () => {
   ];
 
   for (const fixture of sources) {
-    for (const option of dimensionOptions) {
+    for (const option of PIXEL_PRESETS) {
       if (option.widthPx === null || option.heightPx === null) continue;
 
       it(`${fixture} → ${option.detail}`, async () => {
-        const target: TargetSpec = {
-          ...defaultTarget,
-          maxKB: 200,
-          widthPx: option.widthPx,
-          heightPx: option.heightPx,
-          // Exactly what tapping the preset on the Target screen now sets.
-          dimensionMode: 'fill',
-        };
         const result = await compress(
-          targetToRequest(target, join(FIXTURE_DIR, fixture)),
+          {
+            sourceUri: join(FIXTURE_DIR, fixture),
+            minBytes: null,
+            maxBytes: 200 * KB,
+            targetWidth: option.widthPx,
+            targetHeight: option.heightPx,
+            format: 'jpeg',
+            // Exactly what tapping the preset on the site now sets.
+            dimensionMode: 'fill',
+          },
           codec,
         );
 
@@ -515,15 +511,16 @@ describe('named pixel sizes deliver exactly what they say', () => {
     // A panorama squeezed into a square would be unmistakably squashed. Proof
     // that it is not: the output is a centre slice of the original, so a
     // vertical strip down the middle survives unchanged in proportion.
-    const target: TargetSpec = {
-      ...defaultTarget,
-      maxKB: 500,
-      widthPx: 350,
-      heightPx: 350,
-      dimensionMode: 'fill',
-    };
     const result = await compress(
-      targetToRequest(target, join(FIXTURE_DIR, 'panorama-wide.jpg')),
+      {
+        sourceUri: join(FIXTURE_DIR, 'panorama-wide.jpg'),
+        minBytes: null,
+        maxBytes: 500 * KB,
+        targetWidth: 350,
+        targetHeight: 350,
+        format: 'jpeg',
+        dimensionMode: 'fill',
+      },
       codec,
     );
     expect(result.finalWidth).toBe(350);
@@ -536,15 +533,16 @@ describe('named pixel sizes deliver exactly what they say', () => {
 
   it('still fits inside the box when the mode is fit, which is now opt-in', async () => {
     // The old behaviour is not gone, just no longer what a preset selects.
-    const target: TargetSpec = {
-      ...defaultTarget,
-      maxKB: 200,
-      widthPx: 350,
-      heightPx: 350,
-      dimensionMode: 'fit',
-    };
     const result = await compress(
-      targetToRequest(target, join(FIXTURE_DIR, 'phone-photo-landscape.jpg')),
+      {
+        sourceUri: join(FIXTURE_DIR, 'phone-photo-landscape.jpg'),
+        minBytes: null,
+        maxBytes: 200 * KB,
+        targetWidth: 350,
+        targetHeight: 350,
+        format: 'jpeg',
+        dimensionMode: 'fit',
+      },
       codec,
     );
     expect(Math.max(result.finalWidth, result.finalHeight)).toBeLessThanOrEqual(350);

@@ -4,23 +4,23 @@
  * Everything below `../src/core` is plain TypeScript with no React Native and
  * no Expo imports — that was a deliberate constraint from the start, and this
  * file is what it buys: the website runs the *same* compression algorithm as
- * the mobile app, covered by the same 163 tests, with no second
- * implementation to keep in step.
+ * the test suite does, with no second implementation to keep in step.
  *
  * What the website supplies is the other half of the port: a codec built on
- * canvas and Blob. The app's `expoImageCodec` and the test suite's `sharpCodec`
- * are the other two implementations of the same interface.
+ * canvas and Blob. The test suite's `sharpCodec` is the other implementation of
+ * the same interface, which is how the algorithm can be proved against real
+ * photographs in Node and still ship to a browser unchanged.
  */
-import { compress } from '../../src/core/compress';
-import { CompressError } from '../../src/core/errors';
-import { detectFormat } from '../../src/core/sniff';
+import { compress } from '../src/core/compress';
+import { CompressError } from '../src/core/errors';
+import { detectFormat } from '../src/core/sniff';
 import type {
   CompressRequest,
   CompressResult,
   DimensionMode,
   ImageFormat,
-} from '../../src/core/types';
-import { WebImageCodec } from '../../src/platform/webImageCodec';
+} from '../src/core/types';
+import { WebImageCodec } from '../src/platform/webImageCodec';
 
 export type { CompressRequest, CompressResult, DimensionMode, ImageFormat };
 export { detectFormat, CompressError };

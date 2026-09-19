@@ -3,7 +3,7 @@
  *
  * Nothing in src/core may import React Native, Expo or any UI code. The
  * algorithm talks to the outside world only through the `ImageCodec` port
- * below, which is implemented once for the app (expo-image-manipulator) and
+ * below, which is implemented once for the browser (canvas) and
  * once for the tests (sharp, in Node).
  */
 

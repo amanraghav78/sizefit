@@ -1,14 +1,13 @@
 /**
  * The codec for web builds: canvas for pixels, blobs for bytes.
  *
- * The website is a real target, not a preview — everything happens in the
- * browser, so a file being compressed is never uploaded anywhere. It
- * implements the same `ImageCodec` port as the native codec, which is why
- * `src/core` runs completely unmodified in both places.
+ * Everything happens in the browser, so a file being compressed is never
+ * uploaded anywhere. This implements the `ImageCodec` port that `src/core`
+ * talks to, which is why the algorithm runs here completely unmodified — and
+ * why the same algorithm can be proved in Node against sharp.
  *
- * Canvas also gives us one thing the native codec cannot do yet: alpha
- * flattening onto a solid background, so §5.3's white-background rule is
- * honoured here while it is still open on device.
+ * Canvas also handles alpha flattening onto a solid background, so the
+ * white-background rule for JPEG output is honoured.
  *
  * Known browser limits:
  * - HEIC/HEIF decodes in Safari but not in Chrome or Firefox, which have no
