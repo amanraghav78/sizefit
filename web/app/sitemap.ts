@@ -1,15 +1,11 @@
 import type { MetadataRoute } from 'next';
+import { SITE_URL } from '@/lib/site';
 import { tools } from '@/lib/tools';
 
 /**
  * Generated from the tool catalogue, so a new tool cannot be added to the site
- * and forgotten here.
- *
- * Change SITE_URL to the real domain before launch — a sitemap listing the
- * wrong host is worse than none at all.
+ * and forgotten here. The host comes from the environment — see lib/site.ts.
  */
-export const SITE_URL = 'https://sizefit.app';
-
 export const dynamic = 'force-static';
 
 export default function sitemap(): MetadataRoute.Sitemap {
