@@ -395,17 +395,23 @@ function OptionChip({
   selected: boolean;
   onPress: () => void;
 }) {
+  // Hover is what tells a mouse user these chips are choices rather than
+  // labels. No-op where there is no pointer.
+  const [hovered, setHovered] = useState(false);
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityState={{ selected }}
       onPress={onPress}
+      onHoverIn={() => setHovered(true)}
+      onHoverOut={() => setHovered(false)}
       style={({ pressed }) => [
         styles.optionChip,
         {
-          backgroundColor: selected ? theme.accent : theme.surface,
-          borderColor: selected ? theme.accent : theme.border,
+          backgroundColor: selected ? theme.accent : hovered ? theme.surfaceRaised : theme.surface,
+          borderColor: selected ? theme.accent : hovered ? theme.borderStrong : theme.border,
           opacity: pressed ? 0.8 : 1,
+          cursor: 'pointer',
         },
       ]}
     >

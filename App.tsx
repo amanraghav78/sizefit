@@ -51,7 +51,7 @@ import { errorFeedback, successFeedback, tapFeedback } from './src/ui/haptics';
 import { Screen } from './src/ui/Screen';
 import { Shell } from './src/ui/Shell';
 import { formatSize } from './src/ui/format';
-import { darkTheme, lightTheme, spacing } from './src/ui/theme';
+import { CONTENT_MAX_WIDTH, darkTheme, lightTheme, spacing } from './src/ui/theme';
 
 type Screen = 'home' | 'target' | 'preview' | 'batch' | 'document' | 'result' | 'settings';
 
@@ -689,7 +689,7 @@ function SizeFit() {
           light content on Home and normal content elsewhere. */}
       <StatusBar style={screen === 'home' ? 'light' : theme.mode === 'dark' ? 'light' : 'dark'} />
 
-      <Shell theme={theme}>
+      <Shell theme={theme} t={t}>
       <View style={{ height: screen === 'home' ? 0 : insets.top }} />
       <Screen screenKey={screen}>
       {screen === 'home' ? (
@@ -829,6 +829,7 @@ function SizeFit() {
           path). */}
       {error || notice ? (
         <View style={[styles.toastHost, { bottom: spacing.xl + insets.bottom }]} pointerEvents="box-none">
+          <View style={styles.toastColumn} pointerEvents="box-none">
           <Toast
             message={error ?? notice ?? ''}
             tone={error ? 'error' : 'info'}
@@ -838,6 +839,7 @@ function SizeFit() {
               setNotice(null);
             }}
           />
+          </View>
         </View>
       ) : null}
     </KeyboardAvoidingView>
@@ -864,5 +866,13 @@ function explain(cause: unknown, t: (key: string, values?: Record<string, string
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-  toastHost: { position: 'absolute', left: spacing.xl, right: spacing.xl },
+  // Spans the viewport but keeps its contents in the app column, so a toast
+  // on a desktop browser does not stretch the width of the monitor while the
+  // app it belongs to sits in a 520px card.
+  toastHost: { position: 'absolute', left: 0, right: 0, alignItems: 'center' },
+  toastColumn: {
+    width: '100%',
+    maxWidth: CONTENT_MAX_WIDTH,
+    paddingHorizontal: spacing.xl,
+  },
 });

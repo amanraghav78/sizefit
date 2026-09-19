@@ -9,7 +9,7 @@
  */
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { ReactNode } from 'react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Animated,
@@ -63,6 +63,8 @@ export function Button({
     },
   }[variant];
 
+  const [hovered, setHovered] = useState(false);
+
   return (
     <Pressable
       accessibilityRole="button"
@@ -71,15 +73,22 @@ export function Button({
       accessibilityState={{ disabled: disabled || busy, busy }}
       onPress={onPress}
       disabled={disabled || busy}
+      // A mouse expects the control to answer before it is clicked. Without
+      // this every button on the desktop site reads as inert until pressed,
+      // which is the clearest tell that a page is a phone app in a browser.
+      // Both props are no-ops where there is no pointer.
+      onHoverIn={() => setHovered(true)}
+      onHoverOut={() => setHovered(false)}
       style={({ pressed }) => [
         styles.button,
-        elevation(disabled ? 0 : palette.lift, theme),
+        elevation(disabled ? 0 : hovered && !pressed ? 2 : palette.lift, theme),
         {
           backgroundColor: palette.bg,
           borderColor: palette.border,
           borderWidth: variant === 'secondary' || variant === 'onAccentGhost' ? 1 : 0,
-          opacity: disabled ? 0.4 : pressed ? 0.78 : 1,
+          opacity: disabled ? 0.4 : pressed ? 0.78 : hovered ? 0.92 : 1,
           transform: [{ scale: pressed && !disabled ? 0.985 : 1 }],
+          cursor: disabled || busy ? 'auto' : 'pointer',
         },
         style,
       ]}
@@ -118,13 +127,21 @@ export function IconButton({
     danger: theme.danger,
   }[tone];
 
+  const [hovered, setHovered] = useState(false);
+
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={label}
       onPress={onPress}
       hitSlop={10}
-      style={({ pressed }) => [styles.iconButton, { opacity: pressed ? 0.6 : 1 }, style]}
+      onHoverIn={() => setHovered(true)}
+      onHoverOut={() => setHovered(false)}
+      style={({ pressed }) => [
+        styles.iconButton,
+        { opacity: pressed ? 0.6 : hovered ? 0.75 : 1, cursor: 'pointer' },
+        style,
+      ]}
     >
       <Ionicons name={icon} size={size} color={color} />
     </Pressable>

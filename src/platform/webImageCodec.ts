@@ -136,6 +136,18 @@ export class WebImageCodec implements ImageCodec {
     this.sources.clear();
   }
 
+  /**
+   * Take a Blob or File the page already holds and return a uri the port
+   * understands, owned and cleaned up by this codec like any other.
+   *
+   * The app reaches files through a picker that hands back a uri already. A
+   * website gets a File object from an <input> or a drop event, and this is
+   * the one step needed to feed it to the same engine.
+   */
+  stage(blob: Blob): string {
+    return this.hold(blob);
+  }
+
   private async sourceBitmap(sourceUri: string, preloaded?: Blob): Promise<ImageBitmap> {
     const cached = this.sources.get(sourceUri);
     if (cached) {
