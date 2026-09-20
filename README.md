@@ -28,6 +28,7 @@ prose.
 | `/compress-pdf/` | A scanned PDF under a ceiling, with its text left sharp |
 | `/image-to-pdf/` | Several photos into one PDF that fits the limit |
 | `/resize-image/` | Exact pixel dimensions, cropped to fill rather than squashed |
+| `/form-presets/` | The sizes Indian forms ask for, each carrying its numbers into a tool |
 
 `app/sitemap.ts` and `app/robots.ts` are generated from the catalogue in
 `lib/tools.ts`, so a new tool cannot be added to the site and forgotten in the
@@ -39,9 +40,12 @@ sitemap.
 |---|---|
 | `app/` | Next.js routes. Server components except the tools themselves. |
 | `components/` | The tool UIs, the drop zone, the site chrome. |
+| `components/SizeGauge.tsx` | The log-scale bar showing where a result landed. |
+| `components/HomeTarget.tsx` | The landing page stepper, which hands its size to a tool. |
+| `components/FormPresetGrid.tsx` | The searchable presets catalogue. |
 | `lib/engine.ts` | The bridge from the browser to the engine. |
 | `lib/pdfEngine.ts` | The PDF half, imported dynamically — see below. |
-| `lib/presets.ts` | The offered sizes, as plain data the tests can import. |
+| `lib/presets.ts` | Sizes, pixel presets, stepper stops and the form catalogue — plain data the tests import. |
 | `lib/tools.ts` | The tool catalogue: navigation, home grid, sitemap, metadata. |
 | `lib/site.ts` | Resolves the canonical host from the environment. |
 | `src/core/` | **The engine.** Pure TypeScript — no DOM, no React, no framework. |
@@ -65,6 +69,52 @@ without a second implementation.
 - `src/core/pdfBuilder.ts` — images to a sized PDF
 - `src/core/sniff.ts` — format and metadata detection from a file's first bytes
 - `src/core/jpegPadding.ts` — the minimum-size fallback
+
+## The design
+
+The vocabulary lives at the top of `app/globals.css`, in the comment before the
+tokens. Read that before adding a surface, so additions follow it rather than
+drift:
+
+- **Ground** — near-black `#14120E` under a fine dot grid.
+- **Paper** — cream panels sitting ON the ground, with a 3px ink border and a
+  hard offset shadow. No blur. That offset is the signature; it goes on
+  anything that should feel placed rather than drawn.
+- **Accent** — lime `#C9F24D` for affirmation and state, orange `#FF5A36` for
+  action. Never both as the shadow and the fill of one element.
+- **Rotation** — small and deliberate: badges tilt 2–3°, nothing else does.
+- **Type** — Bricolage Grotesque for display, Space Grotesk for prose, Space
+  Mono for anything numeric, technical or label-like.
+
+Dark only. Inverting it would lose the paper panels, which are the whole idea.
+
+Buttons press by moving onto their own shadow rather than fading — the offset
+is the point, so the object should behave like one.
+
+**Fonts load through `next/font`**, not a `<link>` to Google, so they are
+self-hosted and preloaded: no third-party request and no flash of fallback
+text. Worth keeping that way — a render-blocking font request is the wrong
+trade on a page competing for search traffic. Check it survives a dependency
+change:
+
+```
+grep -c "fonts.googleapis" out/compress-image/index.html    # expect 0
+```
+
+**The size gauge is real, not decorative.** It computes log-scale positions
+from the actual file, target and result. The scale is logarithmic because the
+normal job spans three orders of magnitude — a 4MB photo to 40KB — and on a
+linear axis the result would sit invisibly against the left edge.
+
+### Not built: the requirement parser
+
+The design included a box you paste a form’s instruction paragraph into
+("...photograph in JPEG format, size between 20 KB and 50 KB, dimension 3.5 cm
+x 4.5 cm...") which then sets itself up. It is not implemented — it is a real
+feature rather than a visual one, and a hardcoded result would be worse than
+its absence. It is the most distinctive idea in the design and worth building:
+extracting a size band, a dimension pair and a format from that sentence is
+tractable, with clear success criteria.
 
 ## How the size search works
 
@@ -128,9 +178,17 @@ file is re-encoded from pixels rather than edited.
 ## Performance
 
 Measured on the built export — the gzipped size of every `<script>` the page
-actually loads — each page ships about **180KB**, and the home page 172KB.
-(Next prints a smaller "First Load JS" figure in its build table; it counts
-differently, so the number above is the one taken straight off the files.)
+actually loads — each page ships **174–182KB**. (Next prints a smaller "First
+Load JS" figure in its build table; it counts differently, so the number above
+is the one taken straight off the files.) Measure it the same way rather than
+quoting the build table:
+
+```
+grep -o '<script src="\(/_next/static/chunks/[^"]*\)"' out/compress-image/index.html \
+  | sed 's/.*src="//;s/"//' | sort -u \
+  | while read c; do gzip -c "out$c" | wc -c; done \
+  | awk '{s+=$1} END {print int(s/1024) " kB"}'
+```
 
 pdf-lib is the single heaviest dependency, so `lib/pdfEngine.ts` is imported
 dynamically at the moment the button is pressed rather than at the top of
@@ -148,8 +206,13 @@ grep -o '<script src="[^"]*"' out/compress-image/index.html
 
 ## Deploying
 
-Vercel auto-detects Next.js at the repository root; no build command or output
-directory needs setting, and Root Directory stays `.`.
+`vercel.json` pins the build, and it is deliberate that it says
+`"framework": null`. This is a fully static export — no SSR, no ISR, no image
+optimization, nothing to run — so Vercel should serve `out/` as files rather
+than route it through the Next.js builder. Setting `"framework": "nextjs"`
+alongside `outputDirectory: "out"` makes that builder look for a
+`routes-manifest.json` that `output: 'export'` never writes, and the deploy
+fails after a successful build. Root Directory stays `.`.
 
 The canonical host is resolved at build time by `lib/site.ts`:
 
@@ -161,6 +224,12 @@ The canonical host is resolved at build time by `lib/site.ts`:
 Preview deployments serve `Disallow: /`, so only production is indexed.
 
 ## Known limits
+
+- **The design has not been reviewed on a real screen at the time of writing.**
+  It was built from the artboards and verified by build output and measurement
+  only. The display type scale, the shadow weight at page scale, and gauge
+  label collisions when result and target sit close together are the three
+  things most likely to need adjusting.
 
 - **HEIC/HEIF decodes in Safari only.** Chrome and Firefox ship no HEIF decoder,
   so an iPhone photo fails to decode there and the visitor sees the "cannot read
