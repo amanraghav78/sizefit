@@ -3,51 +3,62 @@
  *
  * The vocabulary, so additions stay consistent:
  *
- *   Ground    near-black #14120E under a fine dot grid.
- *   Paper     cream panels sitting ON the ground, with a 3px ink border and a
- *             hard offset shadow — no blur, no softness. That offset is the
- *             signature; use it on anything that should feel placed rather
- *             than drawn.
- *   Ink       #14120E again, for borders and for text on cream.
- *   Accent    lime for affirmation and state, orange for action. Never both
- *             as the shadow and the fill of one element.
- *   Rotation  small, deliberate: badges tilt 2-3deg, nothing else does.
- *   Type      Bricolage Grotesque for display, Space Grotesk for prose,
- *             Space Mono for anything numeric, technical or label-like.
+ *   Cream     #FFF4E8 under everything. The page is warm paper, not a canvas.
+ *   Card      white, generously rounded (24–40px), lifted by a wide soft
+ *             shadow rather than a border. That lift is the signature: a card
+ *             floats, it is never outlined.
+ *   Ink       #3B2A21, a warm near-brown, for every piece of text. Pure black
+ *             appears nowhere.
+ *   Mango     #FFC24B for the thing you should press, and for the part of the
+ *             slider you have already used.
+ *   Mint      #E9F7EF for "this is fine" — the privacy badge, the quality
+ *             chip, the after panel.
+ *   Blush     #FFE8EB for "careful" — the eyebrow, the hurt zone, the mascot's tip.
+ *             Its text colour is rose #FF7A8A.
+ *   Pills     every control that is pressable is a full 999px pill. Rectangles
+ *             with small radii belong to no part of this design.
+ *   Type      Fredoka for anything that should feel spoken — headings, numbers,
+ *             button labels. Outfit for everything else.
  *
- * Dark only. The design has one mode and inverting it would lose the paper
- * panels, which are the whole idea.
+ * Light only. The palette is the product's whole personality and a dark
+ * inversion would turn the cream into a void.
  */
 
 :root {
-  --ground: #14120e;
-  --ground-dot: #2a251b;
-  --panel: #1c1811;
-  --panel-raised: #241f14;
-  --rule: #2e2819;
-  --rule-strong: #3a3227;
+  --cream: #fff4e8;
+  --white: #ffffff;
 
-  --paper: #f7f3e9;
-  --paper-sunk: #eae3d2;
-  --paper-shade: #dcd4c2;
+  --ink: #3b2a21;
+  --ink-soft: #8a7568;
 
-  --ink: #14120e;
-  --ink-soft: #6b6252;
+  --mango: #ffc24b;
+  --mint: #e9f7ef;
+  --blush: #ffe8eb;
+  --rose: #ff7a8a;
 
-  --text: #f7f3e9;
-  --text-muted: #b5ae9f;
-  --text-faint: #8e8879;
+  --line: #f1e7db;
+  --sand: #e8dfd5;
 
-  --lime: #c9f24d;
-  --orange: #ff5a36;
+  --shadow-card: 0 14px 38px rgba(59, 42, 33, 0.09);
+  --shadow-soft: 0 10px 28px rgba(59, 42, 33, 0.08);
+  --shadow-tiny: 0 6px 18px rgba(59, 42, 33, 0.06);
+  --shadow-press: 0 8px 20px rgba(59, 42, 33, 0.16);
+  --shadow-ink: 0 6px 16px rgba(59, 42, 33, 0.18);
+
+  --r-xl: 40px;
+  --r-lg: 32px;
+  --r-md: 26px;
+  --r-sm: 20px;
+  --pill: 999px;
 
   --font-display-stack: var(--font-display), 'Trebuchet MS', 'Segoe UI', sans-serif;
   --font-body-stack: var(--font-body), 'Helvetica Neue', Arial, sans-serif;
-  --font-mono-stack: var(--font-mono), 'Courier New', monospace;
+  /* The design has no monospace face. Numbers are set in the body face with
+     tabular figures, which keeps columns aligned without a second family. */
+  --font-mono-stack: var(--font-body-stack);
 
   --page: 1328px;
   --gutter: 20px;
-  --border: 3px;
 }
 
 *,
@@ -62,10 +73,8 @@ html {
 
 body {
   margin: 0;
-  background-color: var(--ground);
-  background-image: radial-gradient(var(--ground-dot) 1.5px, transparent 1.6px);
-  background-size: 28px 28px;
-  color: var(--text);
+  background: var(--cream);
+  color: var(--ink);
   font-family: var(--font-body-stack);
   font-size: 16px;
   line-height: 1.55;
@@ -78,27 +87,26 @@ h3,
 h4 {
   margin: 0;
   font-family: var(--font-display-stack);
-  font-weight: 800;
-  line-height: 0.98;
-  letter-spacing: -1.4px;
+  font-weight: 700;
+  line-height: 1.02;
+  letter-spacing: -0.4px;
   text-wrap: pretty;
 }
 
 h1 {
-  font-size: clamp(38px, 5.4vw, 74px);
-  letter-spacing: -2.4px;
-  line-height: 0.94;
+  font-size: clamp(38px, 5vw, 68px);
+  line-height: 0.98;
+  letter-spacing: -1px;
 }
 
 h2 {
-  font-size: clamp(28px, 3.4vw, 46px);
-  letter-spacing: -1.6px;
+  font-size: clamp(27px, 3.2vw, 40px);
+  letter-spacing: -0.7px;
 }
 
 h3 {
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: -0.4px;
+  font-size: 21px;
+  font-weight: 600;
 }
 
 p {
@@ -106,12 +114,12 @@ p {
 }
 
 a {
-  color: var(--lime);
+  color: var(--ink);
   text-decoration: none;
 }
 
 a:hover {
-  color: var(--orange);
+  color: var(--rose);
 }
 
 button {
@@ -120,7 +128,7 @@ button {
 }
 
 :focus-visible {
-  outline: 3px solid var(--lime);
+  outline: 3px solid var(--rose);
   outline-offset: 3px;
 }
 
@@ -140,18 +148,19 @@ button {
 .stack {
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: 20px;
 }
 
-/* Mono label — the small uppercase tag used throughout ---------------------- */
+/* Labels ------------------------------------------------------------------- */
 
+/* The small quiet line above a group. Lower case: this design never shouts. */
 .tag {
-  font-family: var(--font-mono-stack);
-  font-size: 11.5px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--text-faint);
+  font-family: var(--font-body-stack);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink-soft);
 }
 
 .tag--ink {
@@ -159,119 +168,131 @@ button {
 }
 
 .tag--lime {
-  color: var(--lime);
+  color: var(--ink);
+  font-weight: 600;
+  font-family: var(--font-display-stack);
+  font-size: 21px;
 }
 
-/* The tilted sticker badge ------------------------------------------------- */
+/* A section's one-line heading, with its link pushed to the far side. */
+.section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
 
+/* Badge — pill with a dot, the design's status marker ---------------------- */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 18px 10px 16px;
+  border-radius: var(--pill);
+  background: var(--mint);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.badge--blush {
+  background: var(--blush);
+}
+
+.badge--cream {
+  background: var(--cream);
+  font-weight: 500;
+  font-size: 15px;
+}
+
+.badge__dot {
+  width: 9px;
+  height: 9px;
+  flex-shrink: 0;
+}
+
+/* The eyebrow above the headline — a badge with no dot. */
 .sticker {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: var(--lime);
+  background: var(--blush);
   color: var(--ink);
-  font-family: var(--font-mono-stack);
-  font-size: 12.5px;
-  font-weight: 700;
-  letter-spacing: 1.4px;
-  text-transform: uppercase;
-  padding: 10px 14px;
-  transform: rotate(-1.6deg);
-  box-shadow: 6px 6px 0 var(--orange);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 16px;
+  border-radius: var(--pill);
 }
 
 /* Header / footer ---------------------------------------------------------- */
 
 .site-header {
-  border-bottom: var(--border) solid var(--rule);
-  background: color-mix(in srgb, var(--ground) 92%, transparent);
-  backdrop-filter: blur(8px);
   position: sticky;
   top: 0;
   z-index: 30;
+  background: color-mix(in srgb, var(--cream) 88%, transparent);
+  backdrop-filter: blur(10px);
 }
 
 .site-header__inner {
-  min-height: 84px;
+  min-height: 88px;
   display: flex;
   align-items: center;
-  gap: 28px;
+  gap: 24px;
   flex-wrap: wrap;
-  padding-block: 12px;
+  padding-block: 14px;
 }
 
 .wordmark {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   flex-shrink: 0;
 }
 
+.wordmark img {
+  width: 30px;
+  height: 30px;
+  display: block;
+}
+
 .wordmark__mark {
-  background: var(--lime);
-  color: var(--ink);
   font-family: var(--font-display-stack);
-  font-weight: 800;
-  font-size: 24px;
+  font-weight: 700;
+  font-size: 30px;
   letter-spacing: -0.5px;
-  padding: 6px 12px;
-  transform: rotate(-3deg);
-}
-
-.wordmark:hover .wordmark__mark {
-  background: var(--orange);
-}
-
-.wordmark__tld {
-  font-family: var(--font-mono-stack);
-  font-size: 11px;
-  letter-spacing: 1.5px;
-  color: #a9a294;
+  color: var(--ink);
 }
 
 .site-nav {
   display: flex;
   align-items: center;
-  gap: 26px;
-  margin-left: auto;
+  gap: 34px;
+  margin: 0 auto;
   flex-wrap: wrap;
 }
 
 .site-nav a {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 500;
-  color: var(--text);
+  color: var(--ink);
 }
 
 .site-nav a:hover {
-  color: var(--lime);
+  color: var(--rose);
 }
 
 .site-nav a[aria-current='page'] {
-  font-weight: 700;
-  color: var(--lime);
-}
-
-/* The privacy meter in the header — the product's one claim, always on show */
-.meter {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  border: 2px solid var(--rule-strong);
-  padding: 8px 14px;
-  flex-shrink: 0;
-}
-
-.meter span {
-  font-family: var(--font-mono-stack);
-  font-size: 11.5px;
-  letter-spacing: 0.6px;
-  color: var(--lime);
+  font-weight: 600;
+  color: var(--rose);
 }
 
 .site-footer {
-  margin-top: 96px;
-  border-top: var(--border) solid var(--rule);
+  margin-top: 88px;
   padding: 40px 0 56px;
 }
 
@@ -279,22 +300,24 @@ button {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
   gap: 32px;
+  background: var(--white);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-tiny);
+  padding: 32px 34px;
 }
 
 .site-footer h3 {
-  font-family: var(--font-mono-stack);
-  font-size: 11.5px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--lime);
-  margin-bottom: 12px;
+  font-family: var(--font-display-stack);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 10px;
 }
 
 .site-footer p,
 .site-footer li {
-  font-size: 14.5px;
-  color: var(--text-faint);
+  font-size: 15px;
+  color: var(--ink-soft);
 }
 
 .site-footer ul {
@@ -306,56 +329,56 @@ button {
 }
 
 .site-footer ul a {
-  color: var(--text-muted);
+  color: var(--ink-soft);
 }
 
 .site-footer ul a:hover {
-  color: var(--lime);
+  color: var(--rose);
 }
 
 .site-footer__note {
-  margin-top: 34px;
-  padding-top: 20px;
-  border-top: 2px solid var(--rule);
-  font-family: var(--font-mono-stack);
-  font-size: 12px;
-  letter-spacing: 0.5px;
-  color: var(--text-faint);
+  margin-top: 26px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--ink-soft);
 }
 
-/* Paper panel — the core surface ------------------------------------------- */
+/* Card — the core surface -------------------------------------------------- */
 
 .paper {
-  background: var(--paper);
-  border: var(--border) solid var(--ink);
-  box-shadow: 9px 9px 0 var(--lime);
+  background: var(--white);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-soft);
   color: var(--ink);
-  padding: 24px;
+  padding: 26px;
 }
 
+/* Kept so the tools can still ask for a warmer card: in this design the
+   difference is the ground it sits on, not a coloured shadow. */
 .paper--orange {
-  box-shadow: 9px 9px 0 var(--orange);
+  background: var(--white);
+  box-shadow: var(--shadow-card);
+  border-radius: var(--r-xl);
 }
 
 .paper--flat {
   box-shadow: none;
+  background: var(--white);
 }
 
 .paper p {
   color: var(--ink-soft);
 }
 
-/* Dark panel — for secondary blocks on the ground --------------------------- */
-
+/* A sunken cream block inside a card — the squeeze area, the panels. */
 .slab {
-  background: var(--panel);
-  border: 2px solid var(--rule-strong);
+  background: var(--cream);
+  border-radius: var(--r-md);
   padding: 20px 22px;
 }
 
 .slab--on {
-  background: var(--panel-raised);
-  border-color: var(--lime);
+  background: var(--mint);
 }
 
 /* Buttons ------------------------------------------------------------------ */
@@ -365,118 +388,154 @@ button {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  min-height: 52px;
-  padding: 0 24px;
-  border: var(--border) solid var(--ink);
+  min-height: 60px;
+  padding: 0 36px;
+  border: 0;
+  border-radius: var(--pill);
   font-family: var(--font-display-stack);
-  font-weight: 800;
-  font-size: 19px;
+  font-weight: 600;
+  font-size: 21px;
   text-align: center;
-  transition: transform 80ms ease, box-shadow 80ms ease;
+  transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
 }
 
-/* The press: the object moves onto its own shadow rather than fading. */
+/* The press: the button settles onto the page rather than fading. */
 .btn:active:not(:disabled) {
-  transform: translate(3px, 3px);
+  transform: translateY(2px);
 }
 
 .btn:disabled {
-  opacity: 0.5;
+  opacity: 0.55;
   cursor: not-allowed;
 }
 
 .btn--action {
-  background: var(--orange);
+  background: var(--mango);
   color: var(--ink);
-  box-shadow: 7px 7px 0 var(--paper);
-}
-
-.btn--action:active:not(:disabled) {
-  box-shadow: 4px 4px 0 var(--paper);
+  box-shadow: var(--shadow-press);
 }
 
 .btn--action:hover:not(:disabled) {
+  background: #ffcf6d;
   color: var(--ink);
 }
 
 .btn--go {
-  background: var(--lime);
-  color: var(--ink);
-  box-shadow: 7px 7px 0 var(--orange);
-}
-
-.btn--go:active:not(:disabled) {
-  box-shadow: 4px 4px 0 var(--orange);
+  background: var(--ink);
+  color: var(--cream);
+  box-shadow: var(--shadow-ink);
 }
 
 .btn--go:hover:not(:disabled) {
-  color: var(--ink);
+  background: #4b382d;
+  color: var(--cream);
 }
 
-/* On cream: quiet, bordered, no shadow. */
-.btn--plain {
-  background: var(--paper);
-  color: var(--ink);
-  box-shadow: none;
-  font-family: var(--font-body-stack);
-  font-weight: 700;
-  font-size: 16px;
-  min-height: 48px;
-}
-
-.btn--plain:hover:not(:disabled) {
-  background: var(--paper-sunk);
-  color: var(--ink);
-}
-
-/* On the ground: bordered in rule, light text. */
+/* The quiet second option: outlined, never filled. */
+.btn--plain,
 .btn--ghost {
-  background: transparent;
-  color: var(--text);
-  border-color: var(--rule-strong);
-  border-width: 2px;
+  background: var(--white);
+  color: var(--ink-soft);
+  border: 2px solid var(--line);
   box-shadow: none;
   font-family: var(--font-body-stack);
-  font-weight: 700;
-  font-size: 15px;
-  min-height: 48px;
+  font-weight: 600;
+  font-size: 18px;
+  min-height: 56px;
 }
 
+.btn--plain:hover:not(:disabled),
 .btn--ghost:hover:not(:disabled) {
-  border-color: var(--lime);
-  color: var(--lime);
+  background: var(--cream);
+  color: var(--ink);
 }
 
 .btn--block {
   width: 100%;
 }
 
-/* Stepper — the target-size control ---------------------------------------- */
+/* The quiet inline action — "change", "swap". A button that reads as a word. */
 
+.link-button {
+  border: 0;
+  background: none;
+  padding: 0;
+  font-family: var(--font-body-stack);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.link-button:hover {
+  color: var(--rose);
+}
+
+/* Target size — the number the form asked for ------------------------------ */
+
+.target-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: var(--white);
+  border-radius: 30px;
+  box-shadow: var(--shadow-soft);
+  padding: 22px 26px 24px;
+}
+
+.target-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 15px;
+}
+
+.target-card__head dt {
+  margin: 0;
+  color: var(--ink-soft);
+  font-weight: 500;
+}
+
+.target-card__head dd {
+  margin: 0;
+}
+
+.target-card__num {
+  font-family: var(--font-display-stack);
+  font-weight: 700;
+  font-size: clamp(42px, 6vw, 56px);
+  line-height: 1;
+  letter-spacing: -1px;
+  color: var(--ink);
+}
+
+/* The stepper survives from the old design, restyled as two round buttons. */
 .stepper {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 16px;
 }
 
 .stepper__btn {
-  width: 52px;
-  height: 52px;
+  width: 48px;
+  height: 48px;
   flex-shrink: 0;
-  border: var(--border) solid var(--ink);
-  background: var(--paper-sunk);
+  border: 1.5px solid var(--line);
+  border-radius: 50%;
+  background: var(--white);
   color: var(--ink);
-  font-size: 28px;
-  font-weight: 700;
+  font-size: 26px;
+  font-weight: 600;
   line-height: 1;
 }
 
 .stepper__btn:hover:not(:disabled) {
-  background: var(--lime);
+  background: var(--mango);
+  border-color: var(--mango);
 }
 
 .stepper__btn:disabled {
-  opacity: 0.35;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
@@ -486,15 +545,15 @@ button {
   align-items: baseline;
   justify-content: center;
   gap: 8px;
-  font-family: var(--font-mono-stack);
+  font-family: var(--font-display-stack);
   font-weight: 700;
   color: var(--ink);
 }
 
 .stepper__num {
-  font-size: clamp(40px, 6vw, 60px);
+  font-size: clamp(38px, 5vw, 56px);
   line-height: 1;
-  letter-spacing: -2px;
+  letter-spacing: -1px;
 }
 
 .stepper__unit {
@@ -502,36 +561,41 @@ button {
   color: var(--ink-soft);
 }
 
-/* Chips — quick size picks on cream ---------------------------------------- */
+/* Chips — the quick sizes -------------------------------------------------- */
 
 .chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
 }
 
 .chip {
   flex: 1 1 auto;
-  min-height: 44px;
-  padding: 0 14px;
-  border: 2px solid var(--ink);
-  background: transparent;
-  color: var(--ink);
-  font-family: var(--font-mono-stack);
-  font-size: 13px;
-  font-weight: 700;
+  min-height: 48px;
+  padding: 0 16px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--pill);
+  background: var(--white);
+  color: var(--ink-soft);
+  font-family: var(--font-body-stack);
+  font-size: 15px;
+  font-weight: 600;
   white-space: nowrap;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
 }
 
 .chip:hover {
-  background: var(--paper-sunk);
+  background: var(--cream);
+  color: var(--ink);
 }
 
 .chip[aria-pressed='true'] {
-  background: var(--lime);
+  background: var(--mango);
+  border-color: var(--mango);
+  color: var(--ink);
 }
 
-/* Preset cards — dark, on the ground --------------------------------------- */
+/* Preset cards ------------------------------------------------------------- */
 
 .preset-row {
   display: grid;
@@ -543,67 +607,68 @@ button {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 7px;
-  min-height: 96px;
-  padding: 15px 16px;
+  justify-content: center;
+  gap: 3px;
+  min-height: 92px;
+  padding: 16px 20px;
   text-align: left;
-  background: var(--panel);
-  border: 2px solid var(--rule-strong);
-  color: var(--text);
+  background: var(--white);
+  border: 0;
+  border-radius: 24px;
+  box-shadow: var(--shadow-tiny);
+  color: var(--ink);
+  transition: transform 120ms ease, box-shadow 120ms ease;
 }
 
 .preset:hover {
-  border-color: var(--lime);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-soft);
 }
 
 .preset[aria-pressed='true'] {
-  background: var(--panel-raised);
-  border-color: var(--lime);
+  background: var(--mango);
+}
+
+.preset[aria-pressed='true'] .preset__dims,
+.preset[aria-pressed='true'] .preset__size {
+  color: var(--ink);
 }
 
 .preset__name {
   font-family: var(--font-display-stack);
-  font-weight: 700;
-  font-size: 17px;
-  letter-spacing: -0.3px;
+  font-weight: 600;
+  font-size: 18px;
 }
 
 .preset__dims {
-  font-family: var(--font-mono-stack);
-  font-size: 11.5px;
-  letter-spacing: 0.4px;
-  color: var(--text-muted);
+  font-size: 13px;
+  color: var(--ink-soft);
 }
 
 .preset__size {
-  margin-top: auto;
-  font-family: var(--font-mono-stack);
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text-muted);
-}
-
-.preset[aria-pressed='true'] .preset__size,
-.preset:hover .preset__size {
-  color: var(--lime);
+  margin-top: 1px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--rose);
 }
 
 /* Drop zone ---------------------------------------------------------------- */
 
 .dropzone {
   position: relative;
-  border: var(--border) dashed var(--ink);
-  padding: 38px 30px;
+  background: var(--cream);
+  border-radius: var(--r-lg);
+  padding: 34px 30px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
+  gap: 18px;
   text-align: center;
-  transition: background 120ms;
+  transition: background 150ms ease;
 }
 
 .dropzone--over {
-  background: var(--lime);
+  background: var(--mint);
 }
 
 .dropzone input[type='file'] {
@@ -613,187 +678,283 @@ button {
   cursor: pointer;
 }
 
+/* The mascot greets you at the drop zone, a size down from the home stage. */
+.dropzone .mascot {
+  width: 230px;
+}
+
 .dropzone__title {
   font-family: var(--font-display-stack);
-  font-weight: 800;
-  font-size: clamp(26px, 3.4vw, 38px);
-  letter-spacing: -1px;
+  font-weight: 600;
+  font-size: clamp(24px, 3vw, 32px);
   color: var(--ink);
 }
 
 .dropzone__formats {
-  font-family: var(--font-mono-stack);
-  font-size: 12.5px;
-  letter-spacing: 0.8px;
+  font-size: 14px;
   color: var(--ink-soft);
 }
 
 /* Hero --------------------------------------------------------------------- */
 
 .hero {
-  padding: 56px 0 8px;
+  padding: 32px 0 8px;
+}
+
+/* A tool page's heading is written for search, so it is longer than the home
+   page's and set smaller — it introduces the picker rather than competing
+   with it. */
+.hero h1 {
+  font-size: clamp(30px, 3.8vw, 46px);
 }
 
 .hero__lede {
-  margin-top: 18px;
-  font-size: clamp(16px, 1.7vw, 17.5px);
-  line-height: 1.5;
-  color: var(--text-muted);
-  max-width: 62ch;
+  margin-top: 16px;
+  font-size: clamp(16px, 1.7vw, 18px);
+  line-height: 1.52;
+  color: var(--ink-soft);
+  max-width: 55ch;
 }
 
 .split {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 40px;
+  gap: 32px;
   align-items: start;
-  padding: 40px 0 0;
+  padding: 32px 0 0;
 }
 
 @media (min-width: 1040px) {
   .split {
-    grid-template-columns: minmax(0, 620px) minmax(0, 1fr);
-    gap: 48px;
+    grid-template-columns: minmax(0, 540px) minmax(0, 1fr);
+    gap: 44px;
+  }
+
+  /* The result puts the evidence first and the arithmetic beside it. */
+  .split--result {
+    grid-template-columns: minmax(0, 800px) minmax(0, 1fr);
   }
 }
 
-/* Size gauge — the log-scale bar on the result ------------------------------ */
+/* Squeeze stage — the mascot between the paddles -------------------------------- */
 
-.gauge {
+.stage-card {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  background: var(--white);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-card);
+  padding: 36px;
+}
+
+.stage-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.squeeze-area {
   position: relative;
-  height: 116px;
-  background: var(--panel);
-  border: 2px solid var(--rule-strong);
-  padding: 0 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 26px;
+  min-height: 336px;
+  padding: 24px;
+  background: var(--cream);
+  border-radius: var(--r-lg);
+  overflow: hidden;
 }
 
-.gauge__label {
-  position: absolute;
-  top: 12px;
-  left: 22px;
+.squeeze-area__paddle {
+  flex-shrink: 0;
+  display: block;
+  width: 32px;
+  height: 200px;
+  max-height: 60%;
 }
 
-.gauge__track,
-.gauge__fill {
-  position: absolute;
-  bottom: 44px;
-  height: 6px;
+/* The mascot's width is what the squeeze does to it: the scale comes from the
+   slider, so the drawing genuinely compresses instead of cross-fading. */
+.mascot {
+  display: block;
+  width: 330px;
+  /* He is the one thing in the row allowed to give: on a narrow screen the
+     paddles keep their size and the mascot shrinks between them. */
+  min-width: 0;
+  max-width: 100%;
+  height: auto;
+  transform-origin: center;
+  transition: transform 180ms ease;
 }
 
-.gauge__track {
-  left: 44px;
-  right: 44px;
-  background: var(--rule-strong);
+.mascot--squished {
+  width: 580px;
 }
 
-.gauge__fill {
-  background: var(--orange);
+.mascot--mini {
+  width: 76px;
+  flex-shrink: 0;
 }
 
-.gauge__target {
-  position: absolute;
-  bottom: 38px;
-  width: 0;
-  border-left: 3px dashed var(--lime);
-  height: 40px;
+/* Slider ------------------------------------------------------------------- */
+
+.squeeze-slider {
+  position: relative;
+  padding-bottom: 22px;
 }
 
-.gauge__targetLabel {
-  position: absolute;
-  bottom: 80px;
-  transform: translateX(-50%);
-  font-family: var(--font-mono-stack);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  color: var(--lime);
-  white-space: nowrap;
-}
-
-.gauge__pin {
-  position: absolute;
-  bottom: 38px;
-  width: 18px;
+.squeeze-slider__rail {
+  position: relative;
   height: 18px;
-  transform: translateX(-50%) rotate(45deg);
-  background: var(--orange);
-  border: var(--border) solid var(--ink);
+  border-radius: var(--pill);
+  background: var(--line);
+  overflow: hidden;
 }
 
-.gauge__pinLabel,
-.gauge__endLabel {
+/* Where the quality gives out. It is drawn on the track rather than written
+   underneath it, so you can see the edge before you reach it. */
+.squeeze-slider__hurt {
   position: absolute;
-  bottom: 12px;
-  transform: translateX(-50%);
-  font-family: var(--font-mono-stack);
-  font-size: 12px;
-  white-space: nowrap;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 30%;
+  background: var(--blush);
 }
 
-.gauge__pinLabel {
-  font-weight: 700;
-  color: var(--text);
-}
-
-.gauge__endLabel {
-  color: var(--text-faint);
-}
-
-.gauge__end {
+.squeeze-slider__fill {
   position: absolute;
-  bottom: 40px;
-  width: 14px;
-  height: 14px;
-  transform: translateX(-50%);
-  background: var(--text-faint);
-  border: var(--border) solid var(--ink);
+  top: 0;
+  left: 0;
+  bottom: 0;
+  background: var(--mango);
+  border-radius: var(--pill);
+}
+
+.squeeze-slider input[type='range'] {
+  position: absolute;
+  top: -14px;
+  left: 0;
+  width: 100%;
+  height: 46px;
+  margin: 0;
+  background: transparent;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.squeeze-slider input[type='range']::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 46px;
+  height: 46px;
   border-radius: 50%;
+  background: var(--white);
+  border: 3px solid var(--ink);
+  box-shadow: var(--shadow-tiny);
+  cursor: grab;
 }
 
-/* Receipt — the result readout --------------------------------------------- */
+.squeeze-slider input[type='range']::-moz-range-thumb {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--white);
+  border: 3px solid var(--ink);
+  box-shadow: var(--shadow-tiny);
+  cursor: grab;
+}
 
-.receipt {
-  background: var(--paper);
-  border: var(--border) solid var(--ink);
-  box-shadow: 9px 9px 0 var(--orange);
-  padding: 24px 26px 26px;
+.squeeze-slider__ends {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 16px;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+.squeeze-slider__ends span:last-child {
+  font-weight: 600;
+  color: var(--rose);
+}
+
+/* Readout ------------------------------------------------------------------ */
+
+.readout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.readout__label {
+  font-size: 14px;
+  color: var(--ink-soft);
+}
+
+.readout__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 2px;
+}
+
+.readout__num {
+  font-family: var(--font-display-stack);
+  font-weight: 700;
+  font-size: clamp(32px, 4vw, 42px);
+  line-height: 1;
+  letter-spacing: -0.5px;
+}
+
+/* The numbers card — what the old receipt became --------------------------- */
+
+.receipt,
+.numbers {
   display: flex;
   flex-direction: column;
   gap: 14px;
+  background: var(--white);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-soft);
+  padding: 24px 26px 26px;
   color: var(--ink);
 }
 
 .receipt__head {
-  text-align: center;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
 .receipt__title {
   font-family: var(--font-display-stack);
-  font-weight: 800;
-  font-size: 22px;
-  letter-spacing: 2px;
+  font-weight: 600;
+  font-size: 21px;
+  letter-spacing: 0;
 }
 
 .receipt__sub {
-  font-family: var(--font-mono-stack);
-  font-size: 10.5px;
-  letter-spacing: 1.4px;
+  font-size: 14px;
   color: var(--ink-soft);
 }
 
+/* The torn edge is gone with the receipt metaphor; a hairline does the same
+   separating job without pretending to be paper. */
 .receipt__tear {
-  border-top: 2px dashed var(--ink);
+  border-top: 1.5px solid var(--line);
 }
 
 .receipt__lines {
   display: flex;
   flex-direction: column;
-  gap: 11px;
-  font-family: var(--font-mono-stack);
-  font-size: 13.5px;
+  gap: 12px;
+  margin: 0;
+  font-size: 16px;
 }
 
 .receipt__line {
@@ -808,54 +969,90 @@ button {
 }
 
 .receipt__line dd {
-  font-weight: 700;
+  font-weight: 600;
   margin: 0;
   text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Before / after ----------------------------------------------------------- */
+
+.ba {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+.ba__panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--cream);
+  border-radius: var(--r-md);
+  padding: 16px;
+}
+
+.ba__panel--after {
+  background: var(--mint);
+}
+
+.ba__label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ba__label span:first-child {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.ba__label span:last-child {
+  font-family: var(--font-display-stack);
+  font-size: 20px;
+  font-weight: 600;
 }
 
 /* Preview stage ------------------------------------------------------------ */
 
 .stage {
   position: relative;
-  border: var(--border) solid var(--ink);
-  background-color: var(--paper-shade);
-  background-image: repeating-linear-gradient(
-    45deg,
-    #d2c9b4 0 12px,
-    var(--paper-shade) 12px 24px
-  );
-  min-height: 280px;
+  background: var(--sand);
+  border-radius: 18px;
+  min-height: 216px;
   display: grid;
   place-items: center;
   overflow: hidden;
-  padding: 16px;
+  padding: 14px;
 }
 
 .stage img {
   max-width: 100%;
-  max-height: 460px;
+  max-height: 420px;
   display: block;
+  border-radius: 10px;
 }
 
 .stage__flag {
   position: absolute;
-  top: 16px;
-  font-family: var(--font-mono-stack);
-  font-size: 11.5px;
-  font-weight: 700;
-  letter-spacing: 1.2px;
-  padding: 7px 11px;
+  top: 14px;
+  padding: 8px 14px;
+  border-radius: var(--pill);
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .stage__flag--before {
-  left: 16px;
-  background: var(--ink);
-  color: var(--paper);
+  left: 14px;
+  background: var(--cream);
+  color: var(--ink-soft);
 }
 
 .stage__flag--after {
-  right: 16px;
-  background: var(--orange);
+  right: 14px;
+  background: var(--mint);
   color: var(--ink);
 }
 
@@ -865,58 +1062,64 @@ button {
   display: inline-flex;
   align-items: center;
   gap: 9px;
-  font-family: var(--font-mono-stack);
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 1.6px;
-  text-transform: uppercase;
-  padding: 11px 15px;
-  transform: rotate(-2deg);
-  border: var(--border) solid var(--ink);
+  padding: 10px 17px 10px 15px;
+  border-radius: var(--pill);
+  background: var(--mint);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .verdict--landed {
-  background: var(--lime);
-  color: var(--ink);
-  box-shadow: 6px 6px 0 var(--orange);
+  background: var(--mint);
 }
 
 .verdict--over {
-  background: var(--orange);
+  background: var(--blush);
   color: var(--ink);
-  box-shadow: 6px 6px 0 var(--paper);
 }
 
 .verdict--under {
-  background: #ffc83d;
+  background: var(--mango);
   color: var(--ink);
-  box-shadow: 6px 6px 0 var(--ink);
 }
 
 /* Notes -------------------------------------------------------------------- */
 
 .note {
-  border: 2px solid var(--ink);
-  padding: 13px 15px;
-  font-size: 14.5px;
-  line-height: 1.45;
+  border-radius: var(--r-sm);
+  padding: 14px 18px;
+  font-size: 15px;
+  line-height: 1.5;
   color: var(--ink);
-  background: var(--paper-sunk);
+  background: var(--cream);
 }
 
 .note--bad {
-  background: var(--orange);
+  background: var(--blush);
 }
 
 .note--warn {
-  background: #ffc83d;
+  background: #fff2d6;
 }
 
-/* On the dark ground rather than on paper. */
 .note--dark {
-  background: var(--panel);
-  border-color: var(--rule-strong);
-  color: var(--text-muted);
+  background: var(--white);
+  box-shadow: var(--shadow-tiny);
+  color: var(--ink-soft);
+}
+
+/* The mascot's aside — the tip card. */
+.tip {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--blush);
+  border-radius: var(--r-lg);
+  padding: 22px 24px;
+  font-size: 15.5px;
+  line-height: 1.48;
+  color: var(--ink);
 }
 
 /* Fields ------------------------------------------------------------------- */
@@ -935,41 +1138,45 @@ button {
 }
 
 .field label {
-  font-family: var(--font-mono-stack);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 1.4px;
-  text-transform: uppercase;
+  font-size: 14px;
+  font-weight: 500;
   color: var(--ink-soft);
 }
 
 .field input,
 .field textarea {
   width: 100%;
-  min-height: 48px;
-  padding: 12px 14px;
-  border: var(--border) solid var(--ink);
-  background: var(--paper-sunk);
+  min-height: 52px;
+  padding: 13px 18px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--pill);
+  background: var(--cream);
   color: var(--ink);
-  font-family: var(--font-mono-stack);
+  font-family: var(--font-body-stack);
   font-size: 15px;
 }
 
+.field input:focus,
+.field textarea:focus {
+  background: var(--white);
+}
+
 .field textarea {
+  border-radius: var(--r-sm);
   resize: vertical;
   line-height: 1.6;
 }
 
-/* Fields sitting on the dark ground. */
+/* Fields on the cream ground rather than inside a white card. */
 .field--dark input,
 .field--dark textarea {
-  background: var(--ground);
-  border: 2px solid var(--rule-strong);
-  color: var(--text);
+  background: var(--white);
+  border-color: var(--line);
+  color: var(--ink);
 }
 
 .field--dark label {
-  color: var(--text-faint);
+  color: var(--ink-soft);
 }
 
 /* File list ---------------------------------------------------------------- */
@@ -978,10 +1185,9 @@ button {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 0;
-  border-bottom: 2px solid rgba(20, 18, 14, 0.14);
-  font-family: var(--font-mono-stack);
-  font-size: 13.5px;
+  padding: 13px 0;
+  border-bottom: 1.5px solid var(--line);
+  font-size: 15px;
   color: var(--ink);
 }
 
@@ -1000,13 +1206,14 @@ button {
 .file-row__meta {
   color: var(--ink-soft);
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 /* Tool grid (home) --------------------------------------------------------- */
 
 .tool-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 16px;
 }
 
@@ -1014,50 +1221,54 @@ button {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 22px 22px 24px;
-  background: var(--panel);
-  border: 2px solid var(--rule-strong);
-  color: var(--text);
-  transition: border-color 120ms, transform 120ms;
+  padding: 24px;
+  background: var(--white);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-tiny);
+  color: var(--ink);
+  transition: transform 140ms ease, box-shadow 140ms ease;
 }
 
 .tool-card:hover {
-  border-color: var(--lime);
-  transform: translate(-2px, -2px);
-  color: var(--text);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-soft);
+  color: var(--ink);
 }
 
 .tool-card__icon {
-  color: var(--lime);
-  margin-bottom: 6px;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--cream);
+  color: var(--ink);
+  margin-bottom: 4px;
 }
 
 .tool-card__name {
   font-family: var(--font-display-stack);
-  font-weight: 700;
+  font-weight: 600;
   font-size: 21px;
-  letter-spacing: -0.4px;
 }
 
 .tool-card p {
-  font-size: 14.5px;
-  color: var(--text-faint);
+  font-size: 15px;
+  color: var(--ink-soft);
 }
 
 .tool-card__go {
   margin-top: auto;
   padding-top: 10px;
-  font-family: var(--font-mono-stack);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 1.2px;
-  color: var(--lime);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--rose);
 }
 
 /* Prose -------------------------------------------------------------------- */
 
 .prose {
-  margin-top: 80px;
+  margin-top: 72px;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -1069,14 +1280,13 @@ button {
 
 .prose h3 {
   margin-top: 26px;
-  font-family: var(--font-display-stack);
   font-size: 19px;
 }
 
 .prose p {
-  color: var(--text-muted);
-  max-width: 72ch;
-  font-size: 15.5px;
+  color: var(--ink-soft);
+  max-width: 70ch;
+  font-size: 16px;
 }
 
 .steps {
@@ -1092,57 +1302,151 @@ button {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  background: var(--white);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-tiny);
+  padding: 22px 24px;
 }
 
 .steps__n {
   display: grid;
   place-items: center;
-  width: 34px;
-  height: 34px;
-  background: var(--lime);
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--mango);
   color: var(--ink);
-  font-family: var(--font-mono-stack);
-  font-size: 15px;
-  font-weight: 700;
+  font-family: var(--font-display-stack);
+  font-size: 17px;
+  font-weight: 600;
 }
 
 .steps strong {
   font-family: var(--font-display-stack);
-  font-weight: 700;
-  font-size: 18px;
+  font-weight: 600;
+  font-size: 19px;
 }
 
 .steps p {
-  font-size: 14.5px;
+  font-size: 15px;
+  color: var(--ink-soft);
 }
 
 /* Trust strip -------------------------------------------------------------- */
 
+/* Three claims on one line — the whole guarantee, no paragraphs. */
 .trust {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 18px;
-  margin-top: 64px;
-  padding-top: 28px;
-  border-top: var(--border) solid var(--rule);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 28px;
+  margin-top: 40px;
 }
 
 .trust__item {
   display: flex;
-  gap: 12px;
+  align-items: center;
+  gap: 9px;
 }
 
 .trust__item strong {
-  display: block;
   font-family: var(--font-display-stack);
-  font-weight: 700;
+  font-weight: 600;
   font-size: 16px;
-  margin-bottom: 2px;
+  color: var(--ink-soft);
 }
 
-.trust__item span {
-  font-size: 14px;
-  color: var(--text-faint);
+/* Size gauge --------------------------------------------------------------- */
+
+.gauge {
+  position: relative;
+  height: 116px;
+  background: var(--white);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-tiny);
+  padding: 0 44px;
+}
+
+.gauge__label {
+  position: absolute;
+  top: 14px;
+  left: 26px;
+}
+
+.gauge__track,
+.gauge__fill {
+  position: absolute;
+  bottom: 44px;
+  height: 8px;
+  border-radius: var(--pill);
+}
+
+.gauge__track {
+  left: 44px;
+  right: 44px;
+  background: var(--line);
+}
+
+.gauge__fill {
+  background: var(--mango);
+}
+
+.gauge__target {
+  position: absolute;
+  bottom: 38px;
+  width: 0;
+  border-left: 2px dashed var(--rose);
+  height: 40px;
+}
+
+.gauge__targetLabel {
+  position: absolute;
+  bottom: 80px;
+  transform: translateX(-50%);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--rose);
+  white-space: nowrap;
+}
+
+.gauge__pin {
+  position: absolute;
+  bottom: 37px;
+  width: 20px;
+  height: 20px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: var(--mango);
+  border: 3px solid var(--white);
+  box-shadow: var(--shadow-tiny);
+}
+
+.gauge__pinLabel,
+.gauge__endLabel {
+  position: absolute;
+  bottom: 12px;
+  transform: translateX(-50%);
+  font-size: 13px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.gauge__pinLabel {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.gauge__endLabel {
+  color: var(--ink-soft);
+}
+
+.gauge__end {
+  position: absolute;
+  bottom: 40px;
+  width: 14px;
+  height: 14px;
+  transform: translateX(-50%);
+  background: var(--sand);
+  border-radius: 50%;
 }
 
 /* Spinner ------------------------------------------------------------------ */
@@ -1150,6 +1454,7 @@ button {
 .spinner {
   width: 18px;
   height: 18px;
+  border-radius: 50%;
   border: 3px solid currentColor;
   border-right-color: transparent;
   animation: spin 640ms linear infinite;
@@ -1170,26 +1475,81 @@ button {
   }
 }
 
-/* The hard offset shadows are the design; on a phone they eat the gutter, so
-   they tighten rather than disappear. */
+/* Phone -------------------------------------------------------------------- */
+
 @media (max-width: 720px) {
+  /* The header becomes two rows: the mark and the promise, then the links. */
+  .site-header__inner {
+    gap: 12px;
+    justify-content: space-between;
+  }
+
+  .site-nav {
+    order: 3;
+    width: 100%;
+    margin: 0;
+    gap: 18px;
+    justify-content: space-between;
+    font-size: 15px;
+  }
+
+  .badge {
+    font-size: 13px;
+    padding: 8px 14px;
+  }
+
+  .wordmark__mark {
+    font-size: 26px;
+  }
+
+  .stage-card {
+    padding: 18px;
+    border-radius: var(--r-lg);
+    gap: 18px;
+  }
+
+  .squeeze-area {
+    min-height: 288px;
+    gap: 10px;
+    padding: 14px;
+  }
+
+  .squeeze-area__paddle {
+    width: 24px;
+    height: 120px;
+  }
+
   .paper,
-  .paper--orange,
-  .receipt {
-    box-shadow: 5px 5px 0 var(--lime);
+  .receipt,
+  .numbers {
+    padding: 20px;
   }
 
-  .paper--orange,
-  .receipt {
-    box-shadow: 5px 5px 0 var(--orange);
+  .site-footer__grid {
+    padding: 26px 22px;
   }
 
-  .btn--action,
-  .btn--go {
-    box-shadow: 4px 4px 0 var(--paper);
+  .btn {
+    min-height: 56px;
+    font-size: 19px;
+    padding: 0 28px;
   }
 
-  .btn--go {
-    box-shadow: 4px 4px 0 var(--orange);
+  /* Four quick sizes will not sit in one row at this width; two and two. */
+  .chips .chip {
+    flex: 1 1 40%;
+  }
+
+  .stage-card__head {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .readout {
+    gap: 14px;
+  }
+
+  .readout .btn {
+    width: 100%;
   }
 }

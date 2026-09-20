@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useRef, useState } from 'react';
-import { SquishMark } from '@/components/chrome';
+import { Mascot } from '@/components/chrome';
 
 /**
  * The way into every tool: a large dashed target you can drop onto or click.
@@ -52,12 +52,12 @@ export function DropZone({
           take(event.dataTransfer.files);
         }}
       >
-        <SquishMark width={230} />
+        <Mascot />
         <span className="dropzone__title">{label}</span>
-        <span className="dropzone__formats">{formats}</span>
-        <span className="btn btn--plain" aria-hidden="true">
-          or browse files
+        <span className="btn btn--action" aria-hidden="true">
+          Choose {multiple ? 'files' : 'a file'}
         </span>
+        <span className="dropzone__formats">{formats}</span>
         <input
           ref={inputRef}
           type="file"
@@ -67,10 +67,6 @@ export function DropZone({
           onChange={(event) => take(event.target.files)}
         />
       </div>
-      <p style={{ marginTop: 18, textAlign: 'center', fontSize: 14, color: 'var(--ink-soft)' }}>
-        Everything runs inside this tab. Your file never touches a server, so there is nothing
-        for us to leak.
-      </p>
     </div>
   );
 }

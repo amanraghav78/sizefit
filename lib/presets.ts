@@ -7,8 +7,8 @@
  * size the label promises, so these are the presets under test, not a copy of
  * them that could drift.
  *
- * The bands are the ones Indian government and university portals actually
- * ask for, which is where the numbers came from.
+ * They are shortcuts, nothing more. Every tool also takes a number typed in,
+ * because the person at the keyboard is the one who knows what they need.
  */
 
 export interface CeilingPreset {
@@ -31,28 +31,28 @@ export const CEILING_PRESETS: CeilingPreset[] = [
 ];
 
 export interface PixelPreset {
+  /** The dimensions themselves: nothing is named after what it might be for. */
   label: string;
-  detail: string;
   widthPx: number | null;
   heightPx: number | null;
 }
 
 export const PIXEL_PRESETS: PixelPreset[] = [
-  { label: 'Keep as is', detail: '', widthPx: null, heightPx: null },
-  { label: 'Photo', detail: '200 × 230', widthPx: 200, heightPx: 230 },
-  { label: 'Signature', detail: '140 × 60', widthPx: 140, heightPx: 60 },
-  { label: 'Thumb', detail: '240 × 240', widthPx: 240, heightPx: 240 },
-  { label: 'Declaration', detail: '800 × 400', widthPx: 800, heightPx: 400 },
-  { label: 'Square', detail: '350 × 350', widthPx: 350, heightPx: 350 },
-  { label: 'Portrait', detail: '600 × 800', widthPx: 600, heightPx: 800 },
+  { label: 'Keep as is', widthPx: null, heightPx: null },
+  { label: '140 × 60', widthPx: 140, heightPx: 60 },
+  { label: '200 × 230', widthPx: 200, heightPx: 230 },
+  { label: '240 × 240', widthPx: 240, heightPx: 240 },
+  { label: '350 × 350', widthPx: 350, heightPx: 350 },
+  { label: '600 × 800', widthPx: 600, heightPx: 800 },
+  { label: '800 × 400', widthPx: 800, heightPx: 400 },
 ];
 
 /**
  * The stops the +/- target-size control moves between.
  *
- * Discrete rather than a free slider: the numbers forms ask for are these
- * numbers, and a stepper that lands on 47 KB would be answering a question
- * nobody asked.
+ * Discrete rather than a free slider: these are round numbers, and a stepper
+ * that landed on 47 KB would be answering a question nobody asked. Typing an
+ * exact figure is always available beside it.
  */
 export const STEPS: number[] = [10, 20, 50, 100, 200, 300, 500, 1024, 2048, 5120];
 
@@ -74,29 +74,3 @@ export function stepLabel(kb: number): { value: string; unit: string } {
   }
   return { value: String(kb), unit: 'KB' };
 }
-
-/**
- * The presets page's catalogue: what real forms demand, grouped by the kind of
- * thing they ask for.
- */
-export interface FormPreset {
-  tag: 'PHOTO' | 'SIGNATURE' | 'PDF';
-  name: string;
-  dims: string;
-  size: string;
-  maxKB: number;
-  minKB: number | null;
-  widthPx: number | null;
-  heightPx: number | null;
-}
-
-export const FORM_PRESETS: FormPreset[] = [
-  { tag: 'PHOTO', name: 'Exam form photo', dims: '3.5 × 4.5 cm · JPG', size: '20 – 50 KB', maxKB: 50, minKB: 20, widthPx: 413, heightPx: 531 },
-  { tag: 'SIGNATURE', name: 'Signature scan', dims: '3.5 × 1.5 cm · JPG', size: '10 – 20 KB', maxKB: 20, minKB: 10, widthPx: 413, heightPx: 177 },
-  { tag: 'PHOTO', name: 'Passport photo', dims: '2 × 2 in · JPG', size: '≤ 100 KB', maxKB: 100, minKB: null, widthPx: 600, heightPx: 600 },
-  { tag: 'PDF', name: 'Bank KYC packet', dims: 'A4 · PDF', size: '≤ 300 KB', maxKB: 300, minKB: null, widthPx: null, heightPx: null },
-  { tag: 'PHOTO', name: 'College admission', dims: '200 × 230 px · JPG', size: '≤ 100 KB', maxKB: 100, minKB: null, widthPx: 200, heightPx: 230 },
-  { tag: 'PDF', name: 'Job portal résumé', dims: 'A4 · PDF', size: '≤ 2 MB', maxKB: 2048, minKB: null, widthPx: null, heightPx: null },
-  { tag: 'PHOTO', name: 'Visa application', dims: '51 × 51 mm · JPG', size: '≤ 240 KB', maxKB: 240, minKB: null, widthPx: 602, heightPx: 602 },
-  { tag: 'PDF', name: 'ID card, both sides', dims: 'A4 · PDF', size: '≤ 500 KB', maxKB: 500, minKB: null, widthPx: null, heightPx: null },
-];

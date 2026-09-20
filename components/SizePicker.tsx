@@ -123,33 +123,3 @@ export function NumberField({
   );
 }
 
-/** The dark preset card used on the home strip and the presets page. */
-export function PresetCard({
-  name,
-  dims,
-  size,
-  selected,
-  onClick,
-}: {
-  name: string;
-  dims: string;
-  size: string;
-  selected?: boolean;
-  onClick?: () => void;
-}) {
-  const inner = (
-    <>
-      <span className="preset__name">{name}</span>
-      <span className="preset__dims">{dims}</span>
-      <span className="preset__size">{size}</span>
-    </>
-  );
-  if (!onClick) {
-    return <div className="preset">{inner}</div>;
-  }
-  return (
-    <button type="button" className="preset" aria-pressed={!!selected} onClick={onClick}>
-      {inner}
-    </button>
-  );
-}

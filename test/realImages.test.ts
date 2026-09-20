@@ -484,7 +484,7 @@ describe('named pixel sizes deliver exactly what they say', () => {
     for (const option of PIXEL_PRESETS) {
       if (option.widthPx === null || option.heightPx === null) continue;
 
-      it(`${fixture} → ${option.detail}`, async () => {
+      it(`${fixture} → ${option.label}`, async () => {
         const result = await compress(
           {
             sourceUri: join(FIXTURE_DIR, fixture),

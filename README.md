@@ -1,6 +1,7 @@
 # SizeFit
 
-Hit the exact file size an online form demands — without going one byte over.
+Squeeze a photo or PDF down to the size you name — without going one byte
+over.
 
 A static website whose tools run entirely in the visitor's browser. There is no
 server, no API and no database, so a file being compressed is never uploaded:
@@ -23,12 +24,11 @@ prose.
 
 | URL | What it does |
 |---|---|
-| `/` | Tool grid and the explanation of why "under the limit" is the hard part |
+| `/` | The squeeze stage itself, the tools, and why "under the limit" is the hard part |
 | `/compress-image/` | A JPG or PNG to an exact KB size — 20KB, 50KB, a 20–50KB band |
 | `/compress-pdf/` | A scanned PDF under a ceiling, with its text left sharp |
 | `/image-to-pdf/` | Several photos into one PDF that fits the limit |
 | `/resize-image/` | Exact pixel dimensions, cropped to fill rather than squashed |
-| `/form-presets/` | The sizes Indian forms ask for, each carrying its numbers into a tool |
 
 `app/sitemap.ts` and `app/robots.ts` are generated from the catalogue in
 `lib/tools.ts`, so a new tool cannot be added to the site and forgotten in the
@@ -41,11 +41,11 @@ sitemap.
 | `app/` | Next.js routes. Server components except the tools themselves. |
 | `components/` | The tool UIs, the drop zone, the site chrome. |
 | `components/SizeGauge.tsx` | The log-scale bar showing where a result landed. |
-| `components/HomeTarget.tsx` | The landing page stepper, which hands its size to a tool. |
-| `components/FormPresetGrid.tsx` | The searchable presets catalogue. |
+| `components/Squeezer.tsx` | The landing page squeeze stage — a working compressor, not a mock. |
+| `public/mascot/` | The mascot, the paddles and the badge dots, exported from the artboards. |
 | `lib/engine.ts` | The bridge from the browser to the engine. |
 | `lib/pdfEngine.ts` | The PDF half, imported dynamically — see below. |
-| `lib/presets.ts` | Sizes, pixel presets, stepper stops and the form catalogue — plain data the tests import. |
+| `lib/presets.ts` | Size ceilings, pixel presets and stepper stops — plain data the tests import. |
 | `lib/tools.ts` | The tool catalogue: navigation, home grid, sitemap, metadata. |
 | `lib/site.ts` | Resolves the canonical host from the environment. |
 | `src/core/` | **The engine.** Pure TypeScript — no DOM, no React, no framework. |
@@ -76,20 +76,31 @@ The vocabulary lives at the top of `app/globals.css`, in the comment before the
 tokens. Read that before adding a surface, so additions follow it rather than
 drift:
 
-- **Ground** — near-black `#14120E` under a fine dot grid.
-- **Paper** — cream panels sitting ON the ground, with a 3px ink border and a
-  hard offset shadow. No blur. That offset is the signature; it goes on
-  anything that should feel placed rather than drawn.
-- **Accent** — lime `#C9F24D` for affirmation and state, orange `#FF5A36` for
-  action. Never both as the shadow and the fill of one element.
-- **Rotation** — small and deliberate: badges tilt 2–3°, nothing else does.
-- **Type** — Bricolage Grotesque for display, Space Grotesk for prose, Space
-  Mono for anything numeric, technical or label-like.
+- **Cream** — `#FFF4E8` under everything. The page is warm paper, not a canvas.
+- **Card** — white, generously rounded (24–40px), lifted by a wide soft shadow
+  rather than a border. That lift is the signature: a card floats, it is never
+  outlined.
+- **Ink** — `#3B2A21`, a warm near-brown, for every piece of text. Pure black
+  appears nowhere.
+- **Accent** — mango `#FFC24B` for the thing you should press; mint `#E9F7EF`
+  for "this is fine"; blush `#FFE8EB` with rose `#FF7A8A` text for "careful".
+- **Pills** — every pressable control is a full 999px pill. Rectangles with
+  small radii belong to no part of this design.
+- **Type** — Fredoka for anything that should feel spoken (headings, numbers,
+  button labels), Outfit for everything else. There is no monospace face;
+  numbers use tabular figures in the body face.
 
-Dark only. Inverting it would lose the paper panels, which are the whole idea.
+Light only. The palette is the product's whole personality and a dark
+inversion would turn the cream into a void.
 
-Buttons press by moving onto their own shadow rather than fading — the offset
-is the point, so the object should behave like one.
+The mascot and the two paddles are the artboard's own SVGs, in
+`public/mascot/`. They are drawings, not icons: never recoloured, never redrawn
+in markup.
+
+**The page leads with the file picker.** Before a file is chosen the home
+stage is nothing but a drop target, and a tool page is a heading, one line and
+the picker. The explanation sits below the fold, where it can do its work for
+search without standing between a visitor and the only thing they came to do.
 
 **Fonts load through `next/font`**, not a `<link>` to Google, so they are
 self-hosted and preloaded: no third-party request and no flash of fallback
@@ -101,20 +112,23 @@ change:
 grep -c "fonts.googleapis" out/compress-image/index.html    # expect 0
 ```
 
+**The squeeze stage on `/` is a real compressor, not a picture of one.**
+`components/Squeezer.tsx` runs the same engine the tool pages do: the slider
+and the target card are two views of one number — the card says the size you
+want, the slider says how hard that is — and every move recompresses the
+file, debounced so a drag does not queue a pass per frame. The mascot squints
+because the file genuinely got smaller. The quality chip reads the encoder's
+own final quality rather than the slider position, so it stays honest on an
+image that will not compress.
+
+The slider's gentle end is one megabyte, or the file itself when that is
+smaller — not the file's own size. A 4MB holiday photo would otherwise push
+every number anyone actually asks for into the last centimetre of the track.
+
 **The size gauge is real, not decorative.** It computes log-scale positions
 from the actual file, target and result. The scale is logarithmic because the
 normal job spans three orders of magnitude — a 4MB photo to 40KB — and on a
 linear axis the result would sit invisibly against the left edge.
-
-### Not built: the requirement parser
-
-The design included a box you paste a form’s instruction paragraph into
-("...photograph in JPEG format, size between 20 KB and 50 KB, dimension 3.5 cm
-x 4.5 cm...") which then sets itself up. It is not implemented — it is a real
-feature rather than a visual one, and a hardcoded result would be worse than
-its absence. It is the most distinctive idea in the design and worth building:
-extracting a size band, a dimension pair and a format from that sentence is
-tractable, with clear success criteria.
 
 ## How the size search works
 

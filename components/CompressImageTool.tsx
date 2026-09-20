@@ -10,7 +10,6 @@ import {
   NumberField,
   Panel,
   PIXEL_PRESETS,
-  PresetCard,
   Stepper,
 } from '@/components/SizePicker';
 import {
@@ -151,36 +150,55 @@ export function CompressImageTool({ mode = 'size' }: { mode?: 'size' | 'pixels' 
         />
       </div>
       <p style={{ marginTop: 12, fontSize: 14, color: 'var(--ink-soft)' }}>
-        A minimum is only needed when the form sets one. The maximum is a hard ceiling either
+        A minimum is only needed if something asks for one. The maximum is a hard ceiling either
         way.
       </p>
     </Panel>
   );
 
+  /** Set both, or neither: a lone width has no box to crop to. */
+  const setPixels = (widthPx: number | null, heightPx: number | null) =>
+    setTarget((c) => ({
+      ...c,
+      widthPx,
+      heightPx,
+      // 'fill' covers the box and crops the overflow, so a 4:3 photo asked for
+      // 350×350 comes back square rather than letterboxed to 350×263.
+      dimensionMode: widthPx === null || heightPx === null ? 'preserve' : 'fill',
+    }));
+
   const pixelPanel = (
     <Panel label="Pixel size" tone="orange">
-      <div className="preset-row">
+      <div className="field-row">
+        <NumberField
+          label="Width"
+          suffix="px"
+          value={target.widthPx === null ? '' : String(target.widthPx)}
+          placeholder="as is"
+          onChange={(next) => setPixels(next === '' ? null : Number(next), target.heightPx)}
+        />
+        <NumberField
+          label="Height"
+          suffix="px"
+          value={target.heightPx === null ? '' : String(target.heightPx)}
+          placeholder="as is"
+          onChange={(next) => setPixels(target.widthPx, next === '' ? null : Number(next))}
+        />
+      </div>
+      <div className="chips" style={{ marginTop: 16 }}>
         {PIXEL_PRESETS.map((preset) => (
-          <PresetCard
+          <Chip
             key={preset.label}
-            name={preset.label}
-            dims={preset.detail || 'whatever it already is'}
-            size={preset.widthPx === null ? 'no resize' : 'cropped to fill'}
             selected={target.widthPx === preset.widthPx && target.heightPx === preset.heightPx}
-            onClick={() =>
-              setTarget((c) => ({
-                ...c,
-                widthPx: preset.widthPx,
-                heightPx: preset.heightPx,
-                // A named size means that size. 'fill' covers the box and
-                // crops the overflow, so a 4:3 photo asked for 350×350 comes
-                // back square rather than letterboxed to 350×263.
-                dimensionMode: preset.widthPx === null ? 'preserve' : 'fill',
-              }))
-            }
-          />
+            onClick={() => setPixels(preset.widthPx, preset.heightPx)}
+          >
+            {preset.label}
+          </Chip>
         ))}
       </div>
+      <p style={{ marginTop: 12, fontSize: 14, color: 'var(--ink-soft)' }}>
+        Set both and the picture is cropped to fill that box, centred — never squashed.
+      </p>
     </Panel>
   );
 
@@ -220,7 +238,7 @@ export function CompressImageTool({ mode = 'size' }: { mode?: 'size' | 'pixels' 
           <p className="note note--warn" style={{ marginTop: 14 }}>
             PNG is lossless, so it has no quality setting to turn down. It can usually meet a
             ceiling by scaling, but it cannot be tuned upward to reach a minimum — choose JPG
-            if your form sets a lower bound.
+            if you need a lower bound.
           </p>
         ) : null}
       </Panel>
@@ -264,7 +282,7 @@ function Results({
       <div className="stack">
         <Verdict over={over} under={under} passthrough={result.passthrough} />
         <h2>
-          {formatBytes(result.finalBytes)} — and the form wanted{' '}
+          {formatBytes(result.finalBytes)} — and you asked for{' '}
           {stepLabel(target.maxKB).value}
           {stepLabel(target.maxKB).unit}.
         </h2>
@@ -286,37 +304,37 @@ function Results({
 
           <div className="receipt">
             <div className="receipt__head">
-              <span className="receipt__title">SIZEFIT RECEIPT</span>
-              <span className="receipt__sub">KEEP FOR YOUR RECORDS</span>
+              <span className="receipt__title">The numbers</span>
+              <span className="receipt__sub">every step of it on your own device</span>
             </div>
             <div className="receipt__tear" />
             <dl className="receipt__lines">
               <div className="receipt__line">
-                <dt>ORIGINAL</dt>
+                <dt>started at</dt>
                 <dd>{formatBytes(single.sourceBytes)}</dd>
               </div>
               <div className="receipt__line">
-                <dt>TARGET</dt>
+                <dt>you asked for</dt>
                 <dd>
                   &le; {stepLabel(target.maxKB).value} {stepLabel(target.maxKB).unit}
                 </dd>
               </div>
               <div className="receipt__line">
-                <dt>FINAL</dt>
+                <dt>landed at</dt>
                 <dd>{formatBytes(result.finalBytes)}</dd>
               </div>
               <div className="receipt__line">
-                <dt>SHRUNK BY</dt>
+                <dt>shrunk by</dt>
                 <dd>{shrunk}%</dd>
               </div>
               <div className="receipt__line">
-                <dt>DIMENSIONS</dt>
+                <dt>now measures</dt>
                 <dd>
                   {result.finalWidth} × {result.finalHeight}
                 </dd>
               </div>
               <div className="receipt__line">
-                <dt>FORMAT</dt>
+                <dt>saved as</dt>
                 <dd>
                   {target.format.toUpperCase()} · q{result.finalQuality}
                 </dd>
@@ -324,8 +342,8 @@ function Results({
             </dl>
             <div className="receipt__tear" />
             <div className="receipt__line" style={{ fontFamily: 'var(--font-mono-stack)', fontSize: 14, fontWeight: 700 }}>
-              <span>UPLOADED</span>
-              <span>0 BYTES</span>
+              <span>uploaded</span>
+              <span>nothing</span>
             </div>
 
             {over ? (
@@ -420,7 +438,7 @@ function Verdict({
     return (
       <p className="verdict verdict--over">
         <BangIcon />
-        OVER THE LIMIT
+        could not get there
       </p>
     );
   }
@@ -428,14 +446,14 @@ function Verdict({
     return (
       <p className="verdict verdict--under">
         <BangIcon />
-        UNDER THE MINIMUM
+        under the minimum
       </p>
     );
   }
   return (
     <p className="verdict verdict--landed">
       <TickIcon />
-      {passthrough ? 'ALREADY THE RIGHT SIZE' : 'LANDED'}
+      {passthrough ? 'already the right size' : 'squeezed'}
     </p>
   );
 }

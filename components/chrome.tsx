@@ -1,43 +1,59 @@
 /**
- * Site chrome: header, footer and the pieces every tool page shares.
+ * Site chrome: header, footer and the pieces every page shares.
  *
  * Server components — none of this needs to run in the browser, so none of it
  * ships as JavaScript. Only the tools themselves are interactive.
+ *
+ * The mascot and the paddles are the artboard's own SVGs, served from
+ * /public/mascot. They are drawings, not icons: they are never recoloured and
+ * never redrawn in markup.
  */
 import Link from 'next/link';
 import { SITE_NAME, tools } from '@/lib/tools';
+
+/* eslint-disable @next/next/no-img-element */
+
+/**
+ * The header's links.
+ *
+ * The design names the destinations the way a visitor would — "Photos", not
+ * "Compress image" — so the labels live here rather than being derived from
+ * the tool catalogue, which still names things the way search does.
+ */
+const NAV: Array<{ label: string; href: string; match?: string }> = [
+  { label: 'Photos', href: '/compress-image/', match: 'compress-image' },
+  { label: 'PDFs', href: '/compress-pdf/', match: 'compress-pdf' },
+  { label: 'Why offline', href: '/#why-offline' },
+];
 
 export function Header({ current }: { current?: string }) {
   return (
     <header className="site-header">
       <div className="wrap site-header__inner">
         <Link href="/" className="wordmark" aria-label={`${SITE_NAME} home`}>
+          <img src="/mascot/blob-mark.svg" alt="" width={30} height={30} />
           <span className="wordmark__mark">{SITE_NAME}</span>
         </Link>
 
         <nav className="site-nav" aria-label="Tools">
-          {tools.map((tool) => (
+          {NAV.map((item) => (
             <Link
-              key={tool.slug}
-              href={`/${tool.slug}/`}
-              {...(current === tool.slug ? { 'aria-current': 'page' as const } : {})}
+              key={item.label}
+              href={item.href}
+              {...(item.match && current === item.match
+                ? { 'aria-current': 'page' as const }
+                : {})}
             >
-              {tool.name}
+              {item.label}
             </Link>
           ))}
-          <Link
-            href="/form-presets/"
-            {...(current === 'form-presets' ? { 'aria-current': 'page' as const } : {})}
-          >
-            Form presets
-          </Link>
         </nav>
 
         {/* The one claim the product makes, kept in view rather than buried in
             a privacy page nobody opens. */}
-        <p className="meter">
-          <LockIcon />
-          <span>0 BYTES UPLOADED</span>
+        <p className="badge">
+          <Dot />
+          nothing leaves your phone
         </p>
       </div>
     </header>
@@ -57,29 +73,19 @@ export function Footer() {
                   <Link href={`/${tool.slug}/`}>{tool.name}</Link>
                 </li>
               ))}
-              <li>
-                <Link href="/form-presets/">Form presets</Link>
-              </li>
             </ul>
           </div>
           <div>
-            <h3>Why nothing uploads</h3>
-            <p>
-              Every tool runs inside your browser, on your own device&rsquo;s processor. Your
-              files are never sent anywhere, because there is no server that could receive
-              them.
-            </p>
+            <h3>Nothing uploads</h3>
+            <p>Every tool runs in your browser. There is no server to send files to.</p>
           </div>
           <div>
             <h3>Works offline</h3>
-            <p>
-              Once the page has loaded it keeps working without a connection — useful when
-              you are filling in a form on patchy mobile data.
-            </p>
+            <p>Once the page has loaded, it keeps working without a connection.</p>
           </div>
         </div>
         <p className="site-footer__note">
-          {SITE_NAME} · FREE · NO SIGN-UP · NO WATERMARK · NO FILE EVER LEAVES YOUR DEVICE
+          {SITE_NAME} · free · no sign-up · no watermark · nothing ever leaves your device
         </p>
       </div>
     </footer>
@@ -87,42 +93,85 @@ export function Footer() {
 }
 
 export function TrustStrip() {
-  const points: Array<[string, string]> = [
-    ['Nothing is uploaded', 'The work happens in this tab, on your device.'],
-    ['Never over the limit', 'The size you ask for is a ceiling the result cannot break.'],
-    ['No sign-up, no watermark', 'Free, and the file you get is the file you keep.'],
-  ];
+  const points = ['Nothing uploaded', 'Never over the limit', 'No sign-up, no watermark'];
   return (
     <div className="trust">
-      {points.map(([title, blurb]) => (
-        <div className="trust__item" key={title}>
+      {points.map((title) => (
+        <p className="trust__item" key={title}>
           <CheckIcon />
-          <span>
-            <strong>{title}</strong>
-            <span>{blurb}</span>
-          </span>
-        </div>
+          <strong>{title}</strong>
+        </p>
       ))}
     </div>
   );
 }
 
-function LockIcon() {
+/** The dot that heads every status pill. Green for good, pink for a file. */
+export function Dot({ tone = 'green' }: { tone?: 'green' | 'pink' }) {
+  const size = tone === 'pink' ? 10 : 9;
   return (
-    <svg
-      width="15"
-      height="15"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="var(--lime)"
-      strokeWidth="2.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <rect x="4" y="11" width="16" height="10" />
-      <path d="M8 11V7a4 4 0 0 1 8 0v4" />
-    </svg>
+    <img
+      className="badge__dot"
+      src={tone === 'pink' ? '/mascot/dot-pink.svg' : '/mascot/dot-green.svg'}
+      alt=""
+      width={size}
+      height={size}
+      style={{ width: size, height: size }}
+    />
+  );
+}
+
+/**
+ * The mascot.
+ *
+ * `squeeze` is how hard he is being pressed, 0 to 1. It scales him
+ * horizontally, which is the whole joke: the drawing is compressed by the same
+ * control that compresses the file.
+ */
+export function Mascot({
+  variant = 'relaxed',
+  squeeze = 0,
+}: {
+  variant?: 'relaxed' | 'squished' | 'mini';
+  squeeze?: number;
+}) {
+  if (variant === 'mini') {
+    return (
+      <img className="mascot mascot--mini" src="/mascot/mascot-mini.svg" alt="" width={76} height={70} />
+    );
+  }
+  if (variant === 'squished') {
+    return (
+      <img
+        className="mascot mascot--squished"
+        src="/mascot/mascot-squished.svg"
+        alt="Mascot, squished flat"
+        width={580}
+        height={210}
+      />
+    );
+  }
+  return (
+    <img
+      className="mascot"
+      src="/mascot/mascot-relaxed.svg"
+      alt="Mascot, waiting to be squeezed"
+      width={330}
+      height={286}
+      style={{ transform: `scaleX(${1 - squeeze * 0.42})` }}
+    />
+  );
+}
+
+export function Paddle({ side }: { side: 'left' | 'right' }) {
+  return (
+    <img
+      className="squeeze-area__paddle"
+      src={`/mascot/paddle-${side}.svg`}
+      alt=""
+      width={32}
+      height={200}
+    />
   );
 }
 
@@ -133,7 +182,7 @@ function CheckIcon() {
       height="20"
       viewBox="0 0 24 24"
       fill="none"
-      stroke="var(--lime)"
+      stroke="var(--rose)"
       strokeWidth="3.2"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -186,8 +235,8 @@ export function DownloadIcon() {
 
 export function ToolIcon({ name }: { name: 'image' | 'pdf' | 'stack' | 'crop' }) {
   const common = {
-    width: 30,
-    height: 30,
+    width: 26,
+    height: 26,
     viewBox: '0 0 24 24',
     fill: 'none',
     stroke: 'currentColor',
@@ -208,7 +257,7 @@ export function ToolIcon({ name }: { name: 'image' | 'pdf' | 'stack' | 'crop' })
   if (name === 'stack') {
     return (
       <svg {...common}>
-        <rect x="7" y="3" width="14" height="14" />
+        <rect x="7" y="3" width="14" height="14" rx="3" />
         <path d="M3 7v12a2 2 0 0 0 2 2h12" />
       </svg>
     );
@@ -223,49 +272,9 @@ export function ToolIcon({ name }: { name: 'image' | 'pdf' | 'stack' | 'crop' })
   }
   return (
     <svg {...common}>
-      <rect x="3" y="3" width="18" height="18" />
+      <rect x="3" y="3" width="18" height="18" rx="4" />
       <circle cx="8.5" cy="8.5" r="1.6" />
       <path d="m21 15-5-5L5 21" />
-    </svg>
-  );
-}
-
-/** The squeeze mark from the artboards — arrows pressing a file inwards. */
-export function SquishMark({ width = 250 }: { width?: number }) {
-  return (
-    <svg
-      width={width}
-      viewBox="0 0 250 192"
-      fill="none"
-      aria-hidden="true"
-      style={{ maxWidth: '100%', height: 'auto' }}
-    >
-      <path d="M125 6v20" stroke="var(--ink)" strokeWidth="5" strokeLinecap="round" />
-      <path
-        d="M113 18l12 12 12-12"
-        stroke="var(--ink)"
-        strokeWidth="5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <rect x="24" y="38" width="202" height="28" fill="var(--lime)" stroke="var(--ink)" strokeWidth="5" />
-      <rect x="64" y="80" width="122" height="34" fill="#FFFFFF" stroke="var(--ink)" strokeWidth="5" />
-      <path d="M80 92h60M80 102h40" stroke="var(--ink)" strokeWidth="4" strokeLinecap="round" />
-      <rect x="24" y="128" width="202" height="28" fill="var(--lime)" stroke="var(--ink)" strokeWidth="5" />
-      <path d="M125 186v-20" stroke="var(--ink)" strokeWidth="5" strokeLinecap="round" />
-      <path
-        d="M113 174l12-12 12 12"
-        stroke="var(--ink)"
-        strokeWidth="5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M42 92l-14 10M42 108l-14 10M208 92l14 10M208 108l14 10"
-        stroke="var(--orange)"
-        strokeWidth="5"
-        strokeLinecap="round"
-      />
     </svg>
   );
 }

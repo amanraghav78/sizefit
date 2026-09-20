@@ -44,7 +44,7 @@ export function CompressPdfTool() {
     return (
       <div className="stack">
         <p className={outcome.overLimit ? 'verdict verdict--over' : 'verdict verdict--landed'}>
-          {outcome.overLimit ? 'OVER THE LIMIT' : 'LANDED'}
+          {outcome.overLimit ? 'could not get there' : 'squeezed'}
         </p>
         <h2>
           {formatBytes(outcome.bytes)} — and the form wanted {stepLabel(maxKB).value}
@@ -59,25 +59,25 @@ export function CompressPdfTool() {
 
         <div className="receipt" style={{ maxWidth: 520 }}>
           <div className="receipt__head">
-            <span className="receipt__title">SIZEFIT RECEIPT</span>
-            <span className="receipt__sub">KEEP FOR YOUR RECORDS</span>
+            <span className="receipt__title">The numbers</span>
+            <span className="receipt__sub">every step of it on your own device</span>
           </div>
           <div className="receipt__tear" />
           <dl className="receipt__lines">
             <div className="receipt__line">
-              <dt>ORIGINAL</dt>
+              <dt>started at</dt>
               <dd>{formatBytes(file.size)}</dd>
             </div>
             <div className="receipt__line">
-              <dt>FINAL</dt>
+              <dt>landed at</dt>
               <dd>{formatBytes(outcome.bytes)}</dd>
             </div>
             <div className="receipt__line">
-              <dt>PAGES</dt>
+              <dt>pages</dt>
               <dd>{outcome.pageCount}</dd>
             </div>
             <div className="receipt__line">
-              <dt>IMAGES REDONE</dt>
+              <dt>images redone</dt>
               <dd>{outcome.imagesRecompressed}</dd>
             </div>
           </dl>
@@ -86,8 +86,8 @@ export function CompressPdfTool() {
             className="receipt__line"
             style={{ fontFamily: 'var(--font-mono-stack)', fontSize: 14, fontWeight: 700 }}
           >
-            <span>UPLOADED</span>
-            <span>0 BYTES</span>
+            <span>uploaded</span>
+            <span>nothing</span>
           </div>
 
           {outcome.imagesSkipped > 0 ? (
@@ -236,7 +236,7 @@ export function ImageToPdfTool() {
     return (
       <div className="stack">
         <p className={outcome.overLimit ? 'verdict verdict--over' : 'verdict verdict--landed'}>
-          {outcome.overLimit ? 'OVER THE LIMIT' : 'LANDED'}
+          {outcome.overLimit ? 'could not get there' : 'squeezed'}
         </p>
         <h2>
           {formatBytes(outcome.bytes)} across {outcome.pageCount}{' '}
@@ -251,25 +251,25 @@ export function ImageToPdfTool() {
 
         <div className="receipt" style={{ maxWidth: 520 }}>
           <div className="receipt__head">
-            <span className="receipt__title">SIZEFIT RECEIPT</span>
-            <span className="receipt__sub">KEEP FOR YOUR RECORDS</span>
+            <span className="receipt__title">The numbers</span>
+            <span className="receipt__sub">every step of it on your own device</span>
           </div>
           <div className="receipt__tear" />
           <dl className="receipt__lines">
             <div className="receipt__line">
-              <dt>IMAGES IN</dt>
+              <dt>images in</dt>
               <dd>{formatBytes(totalIn)}</dd>
             </div>
             <div className="receipt__line">
-              <dt>PDF OUT</dt>
+              <dt>pdf out</dt>
               <dd>{formatBytes(outcome.bytes)}</dd>
             </div>
             <div className="receipt__line">
-              <dt>PAGES</dt>
+              <dt>pages</dt>
               <dd>{outcome.pageCount}</dd>
             </div>
             <div className="receipt__line">
-              <dt>PAGE SIZE</dt>
+              <dt>page size</dt>
               <dd>{pageSize === 'a4' ? 'A4' : 'FIT IMAGE'}</dd>
             </div>
           </dl>
@@ -278,8 +278,8 @@ export function ImageToPdfTool() {
             className="receipt__line"
             style={{ fontFamily: 'var(--font-mono-stack)', fontSize: 14, fontWeight: 700 }}
           >
-            <span>UPLOADED</span>
-            <span>0 BYTES</span>
+            <span>uploaded</span>
+            <span>nothing</span>
           </div>
 
           {outcome.overLimit ? (

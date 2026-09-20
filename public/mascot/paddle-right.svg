@@ -1,0 +1,15 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="32" height="200" viewBox="0 0 32 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Paddle right" clip-path="url(#clip0_0_15)">
+<path id="Vector" d="M32 16C32 7.16344 24.8366 0 16 0C7.16344 0 0 7.16344 0 16V184C0 192.837 7.16344 200 16 200C24.8366 200 32 192.837 32 184V16Z" fill="#3B2A21"/>
+<path id="Vector_2" d="M20 90L12 100L20 110" stroke="#FFF4E8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_3" opacity="0.5" d="M19.5 58H12.5C11.6716 58 11 58.6716 11 59.5C11 60.3284 11.6716 61 12.5 61H19.5C20.3284 61 21 60.3284 21 59.5C21 58.6716 20.3284 58 19.5 58Z" fill="#FFF4E8"/>
+<path id="Vector_4" opacity="0.5" d="M19.5 68H12.5C11.6716 68 11 68.6716 11 69.5C11 70.3284 11.6716 71 12.5 71H19.5C20.3284 71 21 70.3284 21 69.5C21 68.6716 20.3284 68 19.5 68Z" fill="#FFF4E8"/>
+<path id="Vector_5" opacity="0.5" d="M19.5 129H12.5C11.6716 129 11 129.672 11 130.5C11 131.328 11.6716 132 12.5 132H19.5C20.3284 132 21 131.328 21 130.5C21 129.672 20.3284 129 19.5 129Z" fill="#FFF4E8"/>
+<path id="Vector_6" opacity="0.5" d="M19.5 139H12.5C11.6716 139 11 139.672 11 140.5C11 141.328 11.6716 142 12.5 142H19.5C20.3284 142 21 141.328 21 140.5C21 139.672 20.3284 139 19.5 139Z" fill="#FFF4E8"/>
+</g>
+<defs>
+<clipPath id="clip0_0_15">
+<rect width="32" height="200" fill="white"/>
+</clipPath>
+</defs>
+</svg>

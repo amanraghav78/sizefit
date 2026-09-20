@@ -24,15 +24,15 @@ export function ToolPage({
       <Header current={slug} />
       <main>
         <div className="wrap narrow">
+          {/* One line, then the tool. The long version is the page's
+              description in metadata, where it does its work without standing
+              between a visitor and the file picker. */}
           <section className="hero">
-            <p className="sticker" style={{ marginBottom: 22 }}>
-              No upload · No sign-up · No watermark
-            </p>
             <h1>{tool.heading}</h1>
-            <p className="hero__lede">{tool.description}</p>
+            <p className="hero__lede">{tool.blurb}</p>
           </section>
 
-          <div style={{ marginTop: 38 }}>{children}</div>
+          <div style={{ marginTop: 28 }}>{children}</div>
 
           <TrustStrip />
           <section className="prose">{prose}</section>
