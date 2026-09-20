@@ -1,25 +1,26 @@
 'use client';
 
 import { useCallback, useRef, useState } from 'react';
+import { SquishMark } from '@/components/chrome';
 
 /**
- * The way into every tool: a large target you can drop onto or click.
+ * The way into every tool: a large dashed target you can drop onto or click.
  *
  * The file input is a transparent overlay rather than a hidden input behind a
- * button, so the whole panel is one click target and keyboard focus still
+ * button, so the whole panel is one click target while keyboard focus still
  * lands on a real <input type="file">.
  */
 export function DropZone({
   accept,
   multiple = false,
   label,
-  hint,
+  formats,
   onFiles,
 }: {
   accept: string;
   multiple?: boolean;
   label: string;
-  hint: string;
+  formats: string;
   onFiles: (files: File[]) => void;
 }) {
   const [over, setOver] = useState(false);
@@ -37,50 +38,39 @@ export function DropZone({
   );
 
   return (
-    <div
-      className={over ? 'dropzone dropzone--over' : 'dropzone'}
-      onDragOver={(event) => {
-        event.preventDefault();
-        setOver(true);
-      }}
-      onDragLeave={() => setOver(false)}
-      onDrop={(event) => {
-        event.preventDefault();
-        setOver(false);
-        take(event.dataTransfer.files);
-      }}
-    >
-      <UploadIcon />
-      <strong style={{ fontSize: 19 }}>{label}</strong>
-      <span className="dropzone__hint">{hint}</span>
-      <input
-        ref={inputRef}
-        type="file"
-        accept={accept}
-        multiple={multiple}
-        aria-label={label}
-        onChange={(event) => take(event.target.files)}
-      />
+    <div className="paper paper--orange" style={{ padding: 22 }}>
+      <div
+        className={over ? 'dropzone dropzone--over' : 'dropzone'}
+        onDragOver={(event) => {
+          event.preventDefault();
+          setOver(true);
+        }}
+        onDragLeave={() => setOver(false)}
+        onDrop={(event) => {
+          event.preventDefault();
+          setOver(false);
+          take(event.dataTransfer.files);
+        }}
+      >
+        <SquishMark width={230} />
+        <span className="dropzone__title">{label}</span>
+        <span className="dropzone__formats">{formats}</span>
+        <span className="btn btn--plain" aria-hidden="true">
+          or browse files
+        </span>
+        <input
+          ref={inputRef}
+          type="file"
+          accept={accept}
+          multiple={multiple}
+          aria-label={label}
+          onChange={(event) => take(event.target.files)}
+        />
+      </div>
+      <p style={{ marginTop: 18, textAlign: 'center', fontSize: 14, color: 'var(--ink-soft)' }}>
+        Everything runs inside this tab. Your file never touches a server, so there is nothing
+        for us to leak.
+      </p>
     </div>
-  );
-}
-
-function UploadIcon() {
-  return (
-    <svg
-      width="38"
-      height="38"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="var(--accent)"
-      strokeWidth="1.7"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-      <path d="m7 9 5-5 5 5" />
-      <path d="M12 4v12" />
-    </svg>
   );
 }

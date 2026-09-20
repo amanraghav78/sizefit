@@ -1,16 +1,18 @@
 'use client';
 
 import { useCallback, useState } from 'react';
+import { DownloadIcon } from '@/components/chrome';
 import { DropZone } from '@/components/DropZone';
-import { CEILING_PRESETS, Chip, NumberField, Panel } from '@/components/SizePicker';
+import { SizeGauge } from '@/components/SizeGauge';
+import { CEILING_PRESETS, Chip, Panel, Stepper } from '@/components/SizePicker';
 import { downloadBlobUrl, explain, formatBytes } from '@/lib/engine';
 import type { PdfOutcome } from '@/lib/pdfEngine';
+import { STEPS, stepDown, stepLabel, stepUp } from '@/lib/presets';
 
 /** Shrink an existing PDF under a ceiling. */
 export function CompressPdfTool() {
   const [file, setFile] = useState<File | null>(null);
   const [maxKB, setMaxKB] = useState(500);
-  const [maxText, setMaxText] = useState('500');
   const [busy, setBusy] = useState(false);
   const [outcome, setOutcome] = useState<PdfOutcome | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -38,55 +40,91 @@ export function CompressPdfTool() {
     }
   }, [file, maxKB]);
 
-  if (outcome) {
+  if (outcome && file) {
     return (
       <div className="stack">
-        <section className="panel">
-          <span className={outcome.overLimit ? 'badge badge--bad' : 'badge badge--ok'}>
-            {outcome.overLimit ? 'Over the limit' : 'Inside the limit'}
-          </span>
-          <div className="readout" style={{ marginTop: 14 }}>
-            <span className="readout__before">{formatBytes(file?.size ?? 0)}</span>
-            <span className="readout__after">{formatBytes(outcome.bytes)}</span>
+        <p className={outcome.overLimit ? 'verdict verdict--over' : 'verdict verdict--landed'}>
+          {outcome.overLimit ? 'OVER THE LIMIT' : 'LANDED'}
+        </p>
+        <h2>
+          {formatBytes(outcome.bytes)} — and the form wanted {stepLabel(maxKB).value}
+          {stepLabel(maxKB).unit}.
+        </h2>
+
+        <SizeGauge
+          sourceBytes={file.size}
+          finalBytes={outcome.bytes}
+          targetBytes={maxKB * 1024}
+        />
+
+        <div className="receipt" style={{ maxWidth: 520 }}>
+          <div className="receipt__head">
+            <span className="receipt__title">SIZEFIT RECEIPT</span>
+            <span className="receipt__sub">KEEP FOR YOUR RECORDS</span>
           </div>
-          <p style={{ color: 'var(--text-muted)', fontSize: 14.5, marginTop: 6 }}>
-            {outcome.pageCount} {outcome.pageCount === 1 ? 'page' : 'pages'}
-          </p>
+          <div className="receipt__tear" />
+          <dl className="receipt__lines">
+            <div className="receipt__line">
+              <dt>ORIGINAL</dt>
+              <dd>{formatBytes(file.size)}</dd>
+            </div>
+            <div className="receipt__line">
+              <dt>FINAL</dt>
+              <dd>{formatBytes(outcome.bytes)}</dd>
+            </div>
+            <div className="receipt__line">
+              <dt>PAGES</dt>
+              <dd>{outcome.pageCount}</dd>
+            </div>
+            <div className="receipt__line">
+              <dt>IMAGES REDONE</dt>
+              <dd>{outcome.imagesRecompressed}</dd>
+            </div>
+          </dl>
+          <div className="receipt__tear" />
+          <div
+            className="receipt__line"
+            style={{ fontFamily: 'var(--font-mono-stack)', fontSize: 14, fontWeight: 700 }}
+          >
+            <span>UPLOADED</span>
+            <span>0 BYTES</span>
+          </div>
 
           {outcome.imagesSkipped > 0 ? (
-            <p className="note note--warn" style={{ marginTop: 14 }}>
+            <p className="note note--warn">
               {outcome.imagesSkipped}{' '}
               {outcome.imagesSkipped === 1 ? 'image was' : 'images were'} in a format that
               cannot be recompressed here, so they are unchanged. The pages still look the
               same.
             </p>
           ) : null}
-
           {outcome.overLimit ? (
-            <p className="note note--bad" style={{ marginTop: 14 }}>
+            <p className="note note--bad">
               {outcome.imagesRecompressed === 0
                 ? 'This PDF is text or line art rather than scanned pictures, so there is nothing to compress. It is already as small as this tool can make it.'
                 : `This could not be brought under ${maxKB} KB without making the pages unreadable. Choose a larger size, or compress fewer pages at a time.`}
             </p>
           ) : null}
 
-          <button
-            type="button"
-            className="btn btn--primary btn--lg"
-            style={{ marginTop: 18, width: '100%' }}
-            onClick={() =>
+          <a
+            className="btn btn--go btn--block"
+            href={outcome.url}
+            download
+            onClick={(event) => {
+              event.preventDefault();
               downloadBlobUrl(
                 outcome.url,
-                `${(file?.name ?? 'document').replace(/\.pdf$/i, '')}-sizefit.pdf`,
-              )
-            }
+                `${file.name.replace(/\.pdf$/i, '')}-sizefit.pdf`,
+              );
+            }}
           >
-            Download PDF
+            <DownloadIcon />
+            Download {formatBytes(outcome.bytes)}
+          </a>
+          <button type="button" className="btn btn--plain btn--block" onClick={reset}>
+            Compress another
           </button>
-        </section>
-        <button type="button" className="btn btn--secondary" onClick={reset}>
-          Compress another
-        </button>
+        </div>
       </div>
     );
   }
@@ -96,12 +134,12 @@ export function CompressPdfTool() {
       <>
         <DropZone
           accept="application/pdf"
-          label="Choose a PDF"
-          hint="or drop it here. Your document never leaves your device."
+          label="Drop the PDF here"
+          formats="PDF · your document never leaves this device"
           onFiles={(files) => setFile(files[0] ?? null)}
         />
         {error ? (
-          <p className="note note--bad" style={{ marginTop: 16 }}>
+          <p className="note note--dark" style={{ marginTop: 18 }}>
             {error}
           </p>
         ) : null}
@@ -111,52 +149,48 @@ export function CompressPdfTool() {
 
   return (
     <div className="stack">
-      <section className="panel">
-        <div className="panel__label">Your file</div>
+      <section className="paper paper--flat">
+        <h2 className="tag tag--ink" style={{ marginBottom: 6 }}>
+          Your file
+        </h2>
         <div className="file-row">
           <span className="file-row__name">{file.name}</span>
-          <span style={{ color: 'var(--text-muted)' }}>{formatBytes(file.size)}</span>
+          <span className="file-row__meta">{formatBytes(file.size)}</span>
         </div>
-        <button type="button" className="btn btn--ghost" onClick={reset} style={{ marginTop: 10 }}>
+        <button type="button" className="btn btn--plain" onClick={reset} style={{ marginTop: 14 }}>
           Choose a different file
         </button>
       </section>
 
       <Panel label="Target size">
-        <div className="chips">
+        <Stepper
+          value={stepLabel(maxKB).value}
+          unit={stepLabel(maxKB).unit}
+          atMin={maxKB <= STEPS[0]!}
+          atMax={maxKB >= STEPS[STEPS.length - 1]!}
+          onDown={() => setMaxKB(stepDown)}
+          onUp={() => setMaxKB(stepUp)}
+        />
+        <div className="chips" style={{ marginTop: 16 }}>
           {CEILING_PRESETS.filter((preset) => preset.minKB === null).map((preset) => (
             <Chip
               key={preset.label}
               selected={maxKB === preset.maxKB}
-              onClick={() => {
-                setMaxKB(preset.maxKB);
-                setMaxText(String(preset.maxKB));
-              }}
+              onClick={() => setMaxKB(preset.maxKB)}
             >
-              {preset.label}
+              {preset.label.replace('Under ', '')}
             </Chip>
           ))}
         </div>
-        <div className="field-row" style={{ marginTop: 18 }}>
-          <NumberField
-            label="Maximum"
-            suffix="KB"
-            value={maxText}
-            onChange={(next) => {
-              setMaxText(next);
-              if (next !== '') setMaxKB(Number(next));
-            }}
-          />
-        </div>
       </Panel>
 
-      {error ? <p className="note note--bad">{error}</p> : null}
+      {error ? <p className="note note--dark">{error}</p> : null}
 
-      <button type="button" className="btn btn--primary btn--lg" onClick={run} disabled={busy}>
+      <button type="button" className="btn btn--action" onClick={run} disabled={busy}>
         {busy ? (
           <>
             <span className="spinner" aria-hidden="true" />
-            Compressing the document…
+            Squeezing the document…
           </>
         ) : (
           'Compress PDF'
@@ -174,6 +208,8 @@ export function ImageToPdfTool() {
   const [busy, setBusy] = useState(false);
   const [outcome, setOutcome] = useState<PdfOutcome | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const totalIn = files.reduce((sum, file) => sum + file.size, 0);
 
   const reset = () => {
     if (outcome) URL.revokeObjectURL(outcome.url);
@@ -199,34 +235,76 @@ export function ImageToPdfTool() {
   if (outcome) {
     return (
       <div className="stack">
-        <section className="panel">
-          <span className={outcome.overLimit ? 'badge badge--bad' : 'badge badge--ok'}>
-            {outcome.overLimit ? 'Over the limit' : 'Inside the limit'}
-          </span>
-          <div className="readout" style={{ marginTop: 14 }}>
-            <span className="readout__after">{formatBytes(outcome.bytes)}</span>
+        <p className={outcome.overLimit ? 'verdict verdict--over' : 'verdict verdict--landed'}>
+          {outcome.overLimit ? 'OVER THE LIMIT' : 'LANDED'}
+        </p>
+        <h2>
+          {formatBytes(outcome.bytes)} across {outcome.pageCount}{' '}
+          {outcome.pageCount === 1 ? 'page' : 'pages'}.
+        </h2>
+
+        <SizeGauge
+          sourceBytes={Math.max(totalIn, outcome.bytes)}
+          finalBytes={outcome.bytes}
+          targetBytes={maxKB * 1024}
+        />
+
+        <div className="receipt" style={{ maxWidth: 520 }}>
+          <div className="receipt__head">
+            <span className="receipt__title">SIZEFIT RECEIPT</span>
+            <span className="receipt__sub">KEEP FOR YOUR RECORDS</span>
           </div>
-          <p style={{ color: 'var(--text-muted)', fontSize: 14.5, marginTop: 6 }}>
-            {outcome.pageCount} {outcome.pageCount === 1 ? 'page' : 'pages'}
-          </p>
+          <div className="receipt__tear" />
+          <dl className="receipt__lines">
+            <div className="receipt__line">
+              <dt>IMAGES IN</dt>
+              <dd>{formatBytes(totalIn)}</dd>
+            </div>
+            <div className="receipt__line">
+              <dt>PDF OUT</dt>
+              <dd>{formatBytes(outcome.bytes)}</dd>
+            </div>
+            <div className="receipt__line">
+              <dt>PAGES</dt>
+              <dd>{outcome.pageCount}</dd>
+            </div>
+            <div className="receipt__line">
+              <dt>PAGE SIZE</dt>
+              <dd>{pageSize === 'a4' ? 'A4' : 'FIT IMAGE'}</dd>
+            </div>
+          </dl>
+          <div className="receipt__tear" />
+          <div
+            className="receipt__line"
+            style={{ fontFamily: 'var(--font-mono-stack)', fontSize: 14, fontWeight: 700 }}
+          >
+            <span>UPLOADED</span>
+            <span>0 BYTES</span>
+          </div>
+
           {outcome.overLimit ? (
-            <p className="note note--bad" style={{ marginTop: 14 }}>
+            <p className="note note--bad">
               The finished PDF could not be brought under {maxKB} KB. Allow a larger size, or
               use fewer images.
             </p>
           ) : null}
-          <button
-            type="button"
-            className="btn btn--primary btn--lg"
-            style={{ marginTop: 18, width: '100%' }}
-            onClick={() => downloadBlobUrl(outcome.url, 'sizefit.pdf')}
+
+          <a
+            className="btn btn--go btn--block"
+            href={outcome.url}
+            download="sizefit.pdf"
+            onClick={(event) => {
+              event.preventDefault();
+              downloadBlobUrl(outcome.url, 'sizefit.pdf');
+            }}
           >
-            Download PDF
+            <DownloadIcon />
+            Download {formatBytes(outcome.bytes)}
+          </a>
+          <button type="button" className="btn btn--plain btn--block" onClick={reset}>
+            Make another
           </button>
-        </section>
-        <button type="button" className="btn btn--secondary" onClick={reset}>
-          Make another
-        </button>
+        </div>
       </div>
     );
   }
@@ -237,12 +315,12 @@ export function ImageToPdfTool() {
         <DropZone
           accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
           multiple
-          label="Choose images"
-          hint="or drop them here. They become pages, in the order you pick them."
+          label="Drop the pages here"
+          formats="JPG · PNG · HEIC · in the order you pick them"
           onFiles={setFiles}
         />
         {error ? (
-          <p className="note note--bad" style={{ marginTop: 16 }}>
+          <p className="note note--dark" style={{ marginTop: 18 }}>
             {error}
           </p>
         ) : null}
@@ -252,16 +330,20 @@ export function ImageToPdfTool() {
 
   return (
     <div className="stack">
-      <section className="panel">
-        <div className="panel__label">{files.length} pages</div>
+      <section className="paper paper--flat">
+        <h2 className="tag tag--ink" style={{ marginBottom: 6 }}>
+          {files.length} pages
+        </h2>
         {files.map((file, index) => (
           <div className="file-row" key={`${file.name}-${index}`}>
-            <span style={{ color: 'var(--text-faint)', width: 22 }}>{index + 1}</span>
+            <span className="file-row__meta" style={{ width: 22 }}>
+              {index + 1}
+            </span>
             <span className="file-row__name">{file.name}</span>
-            <span style={{ color: 'var(--text-muted)' }}>{formatBytes(file.size)}</span>
+            <span className="file-row__meta">{formatBytes(file.size)}</span>
           </div>
         ))}
-        <button type="button" className="btn btn--ghost" onClick={reset} style={{ marginTop: 10 }}>
+        <button type="button" className="btn btn--plain" onClick={reset} style={{ marginTop: 14 }}>
           Choose different images
         </button>
       </section>
@@ -269,33 +351,32 @@ export function ImageToPdfTool() {
       <Panel label="Page size">
         <div className="chips">
           <Chip selected={pageSize === 'a4'} onClick={() => setPageSize('a4')}>
-            A4
-            <small>Centred on a portrait page</small>
+            A4 — centred on a portrait page
           </Chip>
           <Chip selected={pageSize === 'image'} onClick={() => setPageSize('image')}>
             Fit the image
-            <small>Each page matches its photo</small>
           </Chip>
         </div>
       </Panel>
 
-      <Panel label="Maximum size of the finished PDF">
-        <div className="chips">
-          {CEILING_PRESETS.filter((preset) => preset.minKB === null).map((preset) => (
-            <Chip
-              key={preset.label}
-              selected={maxKB === preset.maxKB}
-              onClick={() => setMaxKB(preset.maxKB)}
-            >
-              {preset.label}
-            </Chip>
-          ))}
-        </div>
+      <Panel label="Maximum size of the finished PDF" tone="orange">
+        <Stepper
+          value={stepLabel(maxKB).value}
+          unit={stepLabel(maxKB).unit}
+          atMin={maxKB <= STEPS[0]!}
+          atMax={maxKB >= STEPS[STEPS.length - 1]!}
+          onDown={() => setMaxKB(stepDown)}
+          onUp={() => setMaxKB(stepUp)}
+        />
+        <p style={{ marginTop: 14, fontSize: 14, color: 'var(--ink-soft)' }}>
+          The budget is shared between the pages, so more pages means a tighter budget for
+          each.
+        </p>
       </Panel>
 
-      {error ? <p className="note note--bad">{error}</p> : null}
+      {error ? <p className="note note--dark">{error}</p> : null}
 
-      <button type="button" className="btn btn--primary btn--lg" onClick={run} disabled={busy}>
+      <button type="button" className="btn btn--action" onClick={run} disabled={busy}>
         {busy ? (
           <>
             <span className="spinner" aria-hidden="true" />
