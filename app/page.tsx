@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { Footer, Header, ToolIcon } from '@/components/chrome';
+import { Footer, Header, SafetyBanner, ToolIcon } from '@/components/chrome';
 import { Squeezer } from '@/components/Squeezer';
 import { SITE_NAME, tools } from '@/lib/tools';
 
@@ -26,11 +26,14 @@ export default function HomePage() {
               <div>
                 <h1>Squeeze it till it fits.</h1>
                 <p className="hero__lede">
-                  Name the size you want. It lands just under, never over, and nothing leaves
-                  your phone.
+                  Name the size you want. It lands just under it, never over.
                 </p>
               </div>
             }
+            // Beside the picker, not below the fold: the moment someone is
+            // deciding whether to hand over a file is the moment the promise
+            // has to be in front of them.
+            aside={<SafetyBanner />}
           />
 
           <section style={{ marginTop: 56 }}>
@@ -51,15 +54,8 @@ export default function HomePage() {
             </div>
           </section>
 
-          <section className="prose narrow" id="why-offline" style={{ marginLeft: 0 }}>
-            <h2>Why nothing leaves your phone</h2>
-            <p>
-              Every squeeze runs in this tab, on your own device. There is no upload, no
-              queue, and no server that could keep a copy — so the tools keep working when
-              the signal does not.
-            </p>
-
-            <h2 style={{ marginTop: 40 }}>Why &ldquo;under the limit&rdquo; is the hard part</h2>
+          <section className="prose narrow" style={{ marginLeft: 0 }}>
+            <h2>Why &ldquo;under the limit&rdquo; is the hard part</h2>
             <p>
               A quality slider makes you do the arithmetic: drag, check the size, drag again.
               These tools work the other way round — you give the size, and the ceiling is

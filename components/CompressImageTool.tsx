@@ -305,7 +305,6 @@ function Results({
           <div className="receipt">
             <div className="receipt__head">
               <span className="receipt__title">The numbers</span>
-              <span className="receipt__sub">every step of it on your own device</span>
             </div>
             <div className="receipt__tear" />
             <dl className="receipt__lines">
@@ -340,11 +339,6 @@ function Results({
                 </dd>
               </div>
             </dl>
-            <div className="receipt__tear" />
-            <div className="receipt__line" style={{ fontFamily: 'var(--font-mono-stack)', fontSize: 14, fontWeight: 700 }}>
-              <span>uploaded</span>
-              <span>nothing</span>
-            </div>
 
             {over ? (
               <p className="note note--bad">

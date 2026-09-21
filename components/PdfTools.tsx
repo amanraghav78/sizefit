@@ -60,7 +60,6 @@ export function CompressPdfTool() {
         <div className="receipt" style={{ maxWidth: 520 }}>
           <div className="receipt__head">
             <span className="receipt__title">The numbers</span>
-            <span className="receipt__sub">every step of it on your own device</span>
           </div>
           <div className="receipt__tear" />
           <dl className="receipt__lines">
@@ -81,14 +80,6 @@ export function CompressPdfTool() {
               <dd>{outcome.imagesRecompressed}</dd>
             </div>
           </dl>
-          <div className="receipt__tear" />
-          <div
-            className="receipt__line"
-            style={{ fontFamily: 'var(--font-mono-stack)', fontSize: 14, fontWeight: 700 }}
-          >
-            <span>uploaded</span>
-            <span>nothing</span>
-          </div>
 
           {outcome.imagesSkipped > 0 ? (
             <p className="note note--warn">
@@ -252,7 +243,6 @@ export function ImageToPdfTool() {
         <div className="receipt" style={{ maxWidth: 520 }}>
           <div className="receipt__head">
             <span className="receipt__title">The numbers</span>
-            <span className="receipt__sub">every step of it on your own device</span>
           </div>
           <div className="receipt__tear" />
           <dl className="receipt__lines">
@@ -273,14 +263,6 @@ export function ImageToPdfTool() {
               <dd>{pageSize === 'a4' ? 'A4' : 'FIT IMAGE'}</dd>
             </div>
           </dl>
-          <div className="receipt__tear" />
-          <div
-            className="receipt__line"
-            style={{ fontFamily: 'var(--font-mono-stack)', fontSize: 14, fontWeight: 700 }}
-          >
-            <span>uploaded</span>
-            <span>nothing</span>
-          </div>
 
           {outcome.overLimit ? (
             <p className="note note--bad">

@@ -296,22 +296,13 @@ button {
   padding: 40px 0 56px;
 }
 
+/* One row: where else to go, and who this is. Nothing is repeated here. */
 .site-footer__grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-  gap: 32px;
-  background: var(--white);
-  border-radius: var(--r-lg);
-  box-shadow: var(--shadow-tiny);
-  padding: 32px 34px;
-}
-
-.site-footer h3 {
-  font-family: var(--font-display-stack);
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--ink);
-  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px 32px;
 }
 
 .site-footer p,
@@ -324,8 +315,9 @@ button {
   margin: 0;
   padding: 0;
   list-style: none;
-  display: grid;
-  gap: 7px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
 }
 
 .site-footer ul a {
@@ -334,13 +326,6 @@ button {
 
 .site-footer ul a:hover {
   color: var(--rose);
-}
-
-.site-footer__note {
-  margin-top: 26px;
-  text-align: center;
-  font-size: 14px;
-  color: var(--ink-soft);
 }
 
 /* Card — the core surface -------------------------------------------------- */
@@ -1334,23 +1319,42 @@ button {
 
 /* Trust strip -------------------------------------------------------------- */
 
-/* Three claims on one line — the whole guarantee, no paragraphs. */
-.trust {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px 28px;
-  margin-top: 40px;
-}
+/* The safety banner — the one claim, said once and said loudly ------------- */
 
-.trust__item {
+.safety {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 20px;
+  margin-top: 40px;
+  padding: 26px 28px;
+  background: var(--mint);
+  border-radius: var(--r-xl);
 }
 
-.trust__item strong {
-  font-family: var(--font-display-stack);
-  font-weight: 600;
+/* In the hero it is a column item, not a full-width band. */
+.split .safety {
+  margin-top: 0;
+}
+
+.safety__icon {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--white);
+  color: var(--ink);
+}
+
+.safety h2 {
+  font-size: clamp(22px, 2.6vw, 30px);
+  letter-spacing: -0.5px;
+}
+
+.safety p {
+  margin-top: 6px;
+  max-width: 68ch;
   font-size: 16px;
   color: var(--ink-soft);
 }

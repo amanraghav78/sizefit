@@ -97,6 +97,13 @@ The mascot and the two paddles are the artboard's own SVGs, in
 `public/mascot/`. They are drawings, not icons: never recoloured, never redrawn
 in markup.
 
+**The privacy claim is made once.** It used to appear in seven places — a
+header badge, a strip of ticks, two footer columns, a line on every receipt —
+which is how the most important thing about the product ended up reading as
+boilerplate. `SafetyBanner` is the one full statement, in mint, sitting beside
+the picker where someone is deciding whether to hand over a file; the header
+badge is its short reminder. Resist adding a third.
+
 **The page leads with the file picker.** Before a file is chosen the home
 stage is nothing but a drop target, and a tool page is a heading, one line and
 the picker. The explanation sits below the fold, where it can do its work for

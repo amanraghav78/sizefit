@@ -45,7 +45,7 @@ const SOFT_QUALITY = 55;
 
 type Phase = 'idle' | 'working' | 'done';
 
-export function Squeezer({ copy }: { copy: React.ReactNode }) {
+export function Squeezer({ copy, aside }: { copy: React.ReactNode; aside?: React.ReactNode }) {
   const [file, setFile] = useState<File | null>(null);
   const [sourceUrl, setSourceUrl] = useState<string | null>(null);
   const [targetKB, setTargetKB] = useState(50);
@@ -197,6 +197,7 @@ export function Squeezer({ copy }: { copy: React.ReactNode }) {
           )}
         </div>
 
+        {aside}
       </div>
 
       {/* The stage. */}
@@ -364,7 +365,6 @@ function Squeezed({
             <Dot />
             squeezed
           </p>
-          <span className="readout__label">all of it on your own device</span>
         </div>
 
         <h1 style={{ marginTop: 26, fontSize: 'clamp(34px, 4.6vw, 54px)' }}>It fits.</h1>
@@ -432,10 +432,6 @@ function Squeezed({
               <dd>
                 {result.finalWidth} × {result.finalHeight}
               </dd>
-            </div>
-            <div className="receipt__line">
-              <dt>uploaded</dt>
-              <dd>nothing</dd>
             </div>
           </dl>
         </div>

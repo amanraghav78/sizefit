@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Footer, Header, TrustStrip } from '@/components/chrome';
+import { Footer, Header, SafetyBanner } from '@/components/chrome';
 import { toolBySlug } from '@/lib/tools';
 
 /**
@@ -34,7 +34,7 @@ export function ToolPage({
 
           <div style={{ marginTop: 28 }}>{children}</div>
 
-          <TrustStrip />
+          <SafetyBanner />
           <section className="prose">{prose}</section>
         </div>
       </main>

@@ -23,7 +23,7 @@ import { SITE_NAME, tools } from '@/lib/tools';
 const NAV: Array<{ label: string; href: string; match?: string }> = [
   { label: 'Photos', href: '/compress-image/', match: 'compress-image' },
   { label: 'PDFs', href: '/compress-pdf/', match: 'compress-pdf' },
-  { label: 'Why offline', href: '/#why-offline' },
+  { label: 'Resize', href: '/resize-image/', match: 'resize-image' },
 ];
 
 export function Header({ current }: { current?: string }) {
@@ -49,11 +49,11 @@ export function Header({ current }: { current?: string }) {
           ))}
         </nav>
 
-        {/* The one claim the product makes, kept in view rather than buried in
-            a privacy page nobody opens. */}
+        {/* The claim, in its short form, kept in view on every page. The long
+            form is the safety banner; this is the reminder. */}
         <p className="badge">
           <Dot />
-          nothing leaves your phone
+          nothing is uploaded
         </p>
       </div>
     </header>
@@ -65,44 +65,43 @@ export function Footer() {
     <footer className="site-footer">
       <div className="wrap">
         <div className="site-footer__grid">
-          <div>
-            <h3>Tools</h3>
-            <ul>
-              {tools.map((tool) => (
-                <li key={tool.slug}>
-                  <Link href={`/${tool.slug}/`}>{tool.name}</Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div>
-            <h3>Nothing uploads</h3>
-            <p>Every tool runs in your browser. There is no server to send files to.</p>
-          </div>
-          <div>
-            <h3>Works offline</h3>
-            <p>Once the page has loaded, it keeps working without a connection.</p>
-          </div>
+          <ul>
+            {tools.map((tool) => (
+              <li key={tool.slug}>
+                <Link href={`/${tool.slug}/`}>{tool.name}</Link>
+              </li>
+            ))}
+          </ul>
+          <p>{SITE_NAME} · free · no sign-up · no watermark</p>
         </div>
-        <p className="site-footer__note">
-          {SITE_NAME} · free · no sign-up · no watermark · nothing ever leaves your device
-        </p>
       </div>
     </footer>
   );
 }
 
-export function TrustStrip() {
-  const points = ['Nothing uploaded', 'Never over the limit', 'No sign-up, no watermark'];
+/**
+ * The one claim worth making, made once.
+ *
+ * It used to be scattered — a badge, a strip of ticks, two footer columns, a
+ * line on every receipt — which is how something important ends up sounding
+ * like boilerplate. It is a single loud statement now, sitting where a visitor
+ * is deciding whether to hand over a file, and it carries the #why-offline
+ * anchor the header links to.
+ */
+export function SafetyBanner() {
   return (
-    <div className="trust">
-      {points.map((title) => (
-        <p className="trust__item" key={title}>
-          <CheckIcon />
-          <strong>{title}</strong>
+    <section className="safety" id="why-offline">
+      <span className="safety__icon">
+        <ShieldIcon />
+      </span>
+      <div>
+        <h2>Your file never leaves this tab.</h2>
+        <p>
+          There is no upload and no server that could hold a copy — the squeezing runs on your
+          own device, which is also why it keeps working with the signal off.
         </p>
-      ))}
-    </div>
+      </div>
+    </section>
   );
 }
 
@@ -175,21 +174,21 @@ export function Paddle({ side }: { side: 'left' | 'right' }) {
   );
 }
 
-function CheckIcon() {
+function ShieldIcon() {
   return (
     <svg
-      width="20"
-      height="20"
+      width="26"
+      height="26"
       viewBox="0 0 24 24"
       fill="none"
-      stroke="var(--rose)"
-      strokeWidth="3.2"
+      stroke="currentColor"
+      strokeWidth="2.2"
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
-      style={{ flexShrink: 0, marginTop: 3 }}
     >
-      <path d="M4 13l5 5L20 6" />
+      <path d="M12 3l7 3v5.5c0 4.3-2.9 8.1-7 9.5-4.1-1.4-7-5.2-7-9.5V6z" />
+      <path d="M9 12l2 2 4-4" />
     </svg>
   );
 }
