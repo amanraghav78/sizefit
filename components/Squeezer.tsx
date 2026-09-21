@@ -15,32 +15,27 @@ import {
  * The home page's squeeze stage: the artboard's central idea, wired to the
  * real engine.
  *
- * The slider is the whole control: it names a size, from "gentle" at the left
- * to the pink zone at the right where the quality gives out, and every move
- * actually recompresses. The mascot squints because the file genuinely got
- * smaller, not because a timer told him to. Someone who needs to type an exact
- * number goes to the tool page, which is a click away.
+ * The slider is the whole control, and it runs the way a size does: smallest
+ * at the left, biggest at the right. Every move actually recompresses, and the
+ * mascot is squeezed by however far left the knob is — he squints because the
+ * file genuinely got smaller, not because a timer told him to. Someone who
+ * needs to type an exact number goes to the tool page, a click away.
  */
 
 const KB = 1024;
 
 /**
- * The two ends of the track.
+ * The two ends of the track: 10 KB at the left, and at the right one
+ * megabyte or the file itself, whichever is smaller.
  *
- * The gentle end is not the file's own size: a 4 MB holiday photo would put
- * every number anyone actually asks for into the last centimetre of the
- * track. It is one megabyte, or the file itself when that is smaller, which
- * keeps the useful range — 1 MB down to 10 KB — spread across the whole bar.
+ * The right-hand end is deliberately not the file's own size. A 4 MB holiday
+ * photo would push every number anyone actually asks for into the last
+ * centimetre of the track; capping it keeps the useful range — 10 KB to 1 MB —
+ * spread across the whole bar.
  */
 const FLOOR_BYTES = 10 * KB;
 const CEIL_BYTES = 1024 * KB;
 const NOMINAL_SOURCE = Math.round(4.2 * 1024 * KB);
-
-/** Where the track turns pink — the last third, as drawn. */
-const HURT_FROM = 0.7;
-
-/** Below this JPEG quality the artefacts start to show on a photograph. */
-const SOFT_QUALITY = 55;
 
 type Phase = 'idle' | 'working' | 'done';
 
@@ -122,9 +117,6 @@ export function Squeezer({ copy, aside }: { copy: React.ReactNode; aside?: React
 
   const result = outcome?.result ?? null;
   const landed = result ? result.finalBytes <= targetKB * KB : false;
-  // Before a file arrives the pink zone is all we have to go on; once one is
-  // here, the encoder's own quality setting is the honest answer.
-  const soft = result ? result.finalQuality < SOFT_QUALITY : position >= HURT_FROM;
 
   if (saved && file && outcome && result) {
     return (
@@ -207,13 +199,12 @@ export function Squeezer({ copy, aside }: { copy: React.ReactNode; aside?: React
 
         <div className="squeeze-area">
           <Paddle side="left" />
-          <Mascot squeeze={position} />
+          <Mascot squeeze={1 - position} />
           <Paddle side="right" />
         </div>
 
         <div className="squeeze-slider">
           <div className="squeeze-slider__rail">
-            <div className="squeeze-slider__hurt" />
             <div className="squeeze-slider__fill" style={{ width: `${position * 100}%` }} />
           </div>
           <input
@@ -221,14 +212,14 @@ export function Squeezer({ copy, aside }: { copy: React.ReactNode; aside?: React
             min={0}
             max={1000}
             value={Math.round(position * 1000)}
-            aria-label="How hard to squeeze"
+            aria-label="Target size"
             onChange={(event) => {
               setTargetKB(targetFor(Number(event.target.value) / 1000, sourceBytes));
             }}
           />
           <p className="squeeze-slider__ends">
-            <span>gentle</span>
-            <span>quality starts to hurt</span>
+            <span>smaller</span>
+            <span>bigger</span>
           </p>
         </div>
 
@@ -239,15 +230,8 @@ export function Squeezer({ copy, aside }: { copy: React.ReactNode; aside?: React
               <p className="readout__num">
                 {result && phase !== 'working' ? formatBytes(result.finalBytes) : '…'}
               </p>
-              {result && phase !== 'working' ? (
-                <p className={soft || !landed ? 'badge badge--blush' : 'badge'}>
-                  {soft || !landed ? null : <Dot />}
-                  {!landed
-                    ? 'cannot get smaller'
-                    : soft
-                      ? 'quality starts to hurt'
-                      : 'still looks crisp'}
-                </p>
+              {result && phase !== 'working' && !landed ? (
+                <p className="badge badge--blush">cannot get any smaller</p>
               ) : null}
               {phase === 'working' ? (
                 <p className="readout__label">
@@ -403,8 +387,7 @@ function Squeezed({
         <div className="tip">
           <Mascot variant="mini" />
           <p>
-            Want it smaller still? Squeeze another and drag further — you will see the moment
-            the quality starts to go.
+            Want it smaller still? Squeeze another and drag the slider further left.
           </p>
         </div>
       </div>
@@ -419,19 +402,19 @@ function Squeezed({
  * and on a linear track every useful size would be crushed against the right
  * edge.
  */
-function gentleEnd(sourceBytes: number): number {
+function biggestEnd(sourceBytes: number): number {
   return Math.max(FLOOR_BYTES * 4, Math.min(sourceBytes, CEIL_BYTES));
 }
 
 function targetFor(position: number, sourceBytes: number): number {
-  const hi = gentleEnd(sourceBytes);
-  const bytes = hi * Math.exp(Math.log(FLOOR_BYTES / hi) * position);
+  const hi = biggestEnd(sourceBytes);
+  const bytes = FLOOR_BYTES * Math.exp(Math.log(hi / FLOOR_BYTES) * position);
   return Math.max(5, Math.round(bytes / KB));
 }
 
 function positionFor(targetBytes: number, sourceBytes: number): number {
-  const hi = gentleEnd(sourceBytes);
-  const span = Math.log(FLOOR_BYTES / hi);
+  const hi = biggestEnd(sourceBytes);
+  const span = Math.log(hi / FLOOR_BYTES);
   if (span === 0) return 0;
-  return Math.min(1, Math.max(0, Math.log(targetBytes / hi) / span));
+  return Math.min(1, Math.max(0, Math.log(targetBytes / FLOOR_BYTES) / span));
 }

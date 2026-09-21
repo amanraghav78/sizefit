@@ -120,17 +120,21 @@ grep -c "fonts.googleapis" out/compress-image/index.html    # expect 0
 ```
 
 **The squeeze stage on `/` is a real compressor, not a picture of one.**
-`components/Squeezer.tsx` runs the same engine the tool pages do: the slider
-and the target card are two views of one number — the card says the size you
-want, the slider says how hard that is — and every move recompresses the
-file, debounced so a drag does not queue a pass per frame. The mascot squints
-because the file genuinely got smaller. The quality chip reads the encoder's
-own final quality rather than the slider position, so it stays honest on an
-image that will not compress.
+`components/Squeezer.tsx` runs the same engine the tool pages do. The slider is
+the whole control — it names a size — and every move recompresses the file,
+debounced so a drag does not queue a pass per frame. The mascot is squeezed by
+however far left the knob is, and squints because the file genuinely got
+smaller.
 
-The slider's gentle end is one megabyte, or the file itself when that is
-smaller — not the file's own size. A 4MB holiday photo would otherwise push
-every number anyone actually asks for into the last centimetre of the track.
+The track runs the way a size does — smallest at the left, biggest at the
+right — and says nothing about how the picture is holding up. A running
+commentary on quality reads as nagging while you drag; the number underneath
+is the answer, and the only thing worth interrupting for is a size the file
+cannot reach at all.
+
+Its right-hand end is one megabyte, or the file itself when that is smaller —
+not the file's own size. A 4MB holiday photo would otherwise push every number
+anyone actually asks for into the last centimetre of the track.
 
 **The size gauge is real, not decorative.** It computes log-scale positions
 from the actual file, target and result. The scale is logarithmic because the

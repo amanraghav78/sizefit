@@ -11,10 +11,10 @@
  *             appears nowhere.
  *   Mango     #FFC24B for the thing you should press, and for the part of the
  *             slider you have already used.
- *   Mint      #E9F7EF for "this is fine" — the privacy badge, the quality
- *             chip, the after panel.
- *   Blush     #FFE8EB for "careful" — the eyebrow, the hurt zone, the mascot's tip.
- *             Its text colour is rose #FF7A8A.
+ *   Mint      #E9F7EF for "this is fine" — the safety banner, the privacy
+ *             badge, the after panel.
+ *   Blush     #FFE8EB for "careful" — the eyebrow, the mascot's tip, a size
+ *             the file cannot reach. Its text colour is rose #FF7A8A.
  *   Pills     every control that is pressable is a full 999px pill. Rectangles
  *             with small radii belong to no part of this design.
  *   Type      Fredoka for anything that should feel spoken — headings, numbers,
@@ -787,17 +787,6 @@ button {
   overflow: hidden;
 }
 
-/* Where the quality gives out. It is drawn on the track rather than written
-   underneath it, so you can see the edge before you reach it. */
-.squeeze-slider__hurt {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 30%;
-  background: var(--blush);
-}
-
 .squeeze-slider__fill {
   position: absolute;
   top: 0;
@@ -841,17 +830,14 @@ button {
   cursor: grab;
 }
 
+/* Which way the track runs, and nothing else: no commentary on how the
+   picture is holding up — the size below is the answer. */
 .squeeze-slider__ends {
   display: flex;
   justify-content: space-between;
   margin-top: 16px;
   font-size: 13px;
   color: var(--ink-soft);
-}
-
-.squeeze-slider__ends span:last-child {
-  font-weight: 600;
-  color: var(--rose);
 }
 
 /* Readout ------------------------------------------------------------------ */
