@@ -15,12 +15,11 @@ import {
  * The home page's squeeze stage: the artboard's central idea, wired to the
  * real engine.
  *
- * The slider and the target card are two views of one number. The card says
- * the size you want; the slider says how hard that is on this particular
- * file, from "gentle" at the left to the pink zone at the right where the
- * quality gives out. Moving either moves the other, and every move actually
- * recompresses — the mascot squints because the file genuinely got smaller, not
- * because a timer told him to.
+ * The slider is the whole control: it names a size, from "gentle" at the left
+ * to the pink zone at the right where the quality gives out, and every move
+ * actually recompresses. The mascot squints because the file genuinely got
+ * smaller, not because a timer told him to. Someone who needs to type an exact
+ * number goes to the tool page, which is a click away.
  */
 
 const KB = 1024;
@@ -49,7 +48,6 @@ export function Squeezer({ copy, aside }: { copy: React.ReactNode; aside?: React
   const [file, setFile] = useState<File | null>(null);
   const [sourceUrl, setSourceUrl] = useState<string | null>(null);
   const [targetKB, setTargetKB] = useState(50);
-  const [custom, setCustom] = useState(false);
   const [phase, setPhase] = useState<Phase>('idle');
   const [outcome, setOutcome] = useState<ImageOutcome | null>(null);
   const [saved, setSaved] = useState(false);
@@ -145,58 +143,6 @@ export function Squeezer({ copy, aside }: { copy: React.ReactNode; aside?: React
       <div className="stack" style={{ gap: 26 }}>
         {copy}
 
-        {/* The target card: the size you are aiming for. */}
-        <div className="target-card">
-          <dl className="target-card__head">
-            <dt>squeeze it to</dt>
-            <dd>
-              <button
-                type="button"
-                className="link-button"
-                aria-expanded={custom}
-                onClick={() => setCustom((open) => !open)}
-              >
-                {custom ? 'done' : 'change'}
-              </button>
-            </dd>
-          </dl>
-
-          <p className="target-card__num">
-            {targetKB >= 1024 ? `${(targetKB / 1024).toFixed(targetKB % 1024 ? 1 : 0)} MB` : `${targetKB} KB`}
-          </p>
-
-          {custom ? (
-            <div className="field">
-              <label htmlFor="own-size">your own number, in KB</label>
-              <input
-                id="own-size"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                value={String(targetKB)}
-                onChange={(event) => {
-                  const digits = event.target.value.replace(/[^0-9]/g, '');
-                  setTargetKB(digits === '' ? 0 : Math.min(Number(digits), 20480));
-                }}
-                onBlur={() => setTargetKB((kb) => (kb < 5 ? 5 : kb))}
-              />
-            </div>
-          ) : (
-            <div className="chips">
-              {[20, 50, 100, 1024].map((kb) => (
-                <button
-                  key={kb}
-                  type="button"
-                  className="chip"
-                  aria-pressed={targetKB === kb}
-                  onClick={() => setTargetKB(kb)}
-                >
-                  {kb >= 1024 ? `${kb / 1024} MB` : `${kb} KB`}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
         {aside}
       </div>
 
@@ -278,7 +224,6 @@ export function Squeezer({ copy, aside }: { copy: React.ReactNode; aside?: React
             aria-label="How hard to squeeze"
             onChange={(event) => {
               setTargetKB(targetFor(Number(event.target.value) / 1000, sourceBytes));
-              setCustom(false);
             }}
           />
           <p className="squeeze-slider__ends">

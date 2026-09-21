@@ -455,44 +455,7 @@ button {
   color: var(--rose);
 }
 
-/* Target size — the number the form asked for ------------------------------ */
-
-.target-card {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  background: var(--white);
-  border-radius: 30px;
-  box-shadow: var(--shadow-soft);
-  padding: 22px 26px 24px;
-}
-
-.target-card__head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  font-size: 15px;
-}
-
-.target-card__head dt {
-  margin: 0;
-  color: var(--ink-soft);
-  font-weight: 500;
-}
-
-.target-card__head dd {
-  margin: 0;
-}
-
-.target-card__num {
-  font-family: var(--font-display-stack);
-  font-weight: 700;
-  font-size: clamp(42px, 6vw, 56px);
-  line-height: 1;
-  letter-spacing: -1px;
-  color: var(--ink);
-}
+/* Target size ------------------------------------------------------------ */
 
 /* The stepper survives from the old design, restyled as two round buttons. */
 .stepper {
