@@ -139,12 +139,12 @@ export function Squeezer({ copy, aside }: { copy: React.ReactNode; aside?: React
   }
 
   return (
-    <div className="split">
-      <div className="stack" style={{ gap: 26 }}>
-        {copy}
-
-        {aside}
-      </div>
+    // Three children, not two: on a phone they read in this order — the
+    // headline, then the picker, then the promise — so the thing to press is
+    // on screen without scrolling. The desktop grid puts the picker in the
+    // right-hand column and stacks the other two beside it.
+    <div className="split split--stage">
+      <div className="hero-copy">{copy}</div>
 
       {/* The stage. */}
       <div
@@ -275,6 +275,8 @@ export function Squeezer({ copy, aside }: { copy: React.ReactNode; aside?: React
 
         {error ? <p className="note note--bad">{error}</p> : null}
       </div>
+
+      {aside}
     </div>
   );
 }
